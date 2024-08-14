@@ -29,24 +29,17 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                     <div class="card card-primary card-outline">
                         <div class="card-header">
                             <h5 class="card-title">Data pembelian</h5>
-                            <?php if ($level != "admin" && $level != "pengawas") : ?>
-                                <a href="<?= base_url('pembelian/tambah') ?>" class="btn btn-primary btn-sm float-right"><i class="fa fa-plus"></i> Tambah Data</a>
-                            <?php endif; ?>
                             <button onclick="cetakLaporanPembelian()" class="btn btn-info btn-sm float-right mr-2"><i class="fa fa-print"></i> Cetak Laporan</button>
                         </div>
                         <div class="card-body">
                             <div class="row mb-3">
                                 <div class="col-md-3">
-                                    <select id="filter_barang" class="form-control">
-                                        <option value="">Semua Barang</option>
+                                    <select id="filter_supplier" class="form-control">
+                                        <option value="">Semua Supplier</option>
                                         <?php
-                                        $unique_barang = array_unique(array_column($pembelian, 'id_barang'));
-                                        foreach ($unique_barang as $id_barang) {
-                                            foreach ($barang as $b) {
-                                                if ($b->id_barang == $id_barang) {
-                                                    echo "<option value='" . $b->merk . " - " . $b->bahan . " - " . $b->ukuran . "'>" . $b->merk . " - " . $b->bahan . " - " . $b->ukuran . "</option>";
-                                                }
-                                            }
+                                        $unique_suppliers = array_unique(array_column($pembelian, 'nama_suplier'));
+                                        foreach ($unique_suppliers as $supplier) {
+                                            echo "<option value='" . $supplier . "'>" . $supplier . "</option>";
                                         }
                                         ?>
                                     </select>
@@ -68,10 +61,8 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                                             <th>jumlah</th>
                                             <th>Harga Beli</th>
                                             <th>total</th>
-                                            <th>Bukti</th>
                                             <th>tanggal input</th>
                                             <th>Penambah</th>
-                                            <th>Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -119,21 +110,8 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                                                     ?>
                                                 </td>
                                                 <td><?= $row->total; ?></td>
-                                                <td>
-                                                    <?php if ($row->bukti): ?>
-                                                        <a href="<?= base_url('bukti/' . $row->bukti); ?>" target="_blank">View Bukti</a>
-                                                    <?php else: ?>
-                                                        No Bukti Available
-                                                    <?php endif; ?>
-                                                </td>
                                                 <td><?= $row->tanggal_input; ?></td>
                                                 <td><?= $row->nama_lengkap; ?></td>
-                                                <td>
-
-                                                    <a href="<?= base_url('pembelian/ubah/' . $row->id_pembelian) ?>" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></a>
-                                                   
-
-                                                </td>
                                             </tr>
                                         <?php endforeach; ?>
                                     </tbody>
@@ -157,26 +135,27 @@ $id_pengguna = $this->session->userdata('id_pengguna');
 
         // Fungsi untuk memfilter data
         function filterData() {
-            var barang = $('#filter_barang').val();
-            var bulanTahun = $('#filter_bulan_tahun').val();
+        var supplier = $('#filter_supplier').val();
+        var bulanTahun = $('#filter_bulan_tahun').val();
 
-            table.columns(2).search(barang); // Kolom Barang
+        table.column(1).search(supplier); // Kolom Supplier
 
-            if (bulanTahun) {
-                var [tahun, bulan] = bulanTahun.split('-');
-                var regex = '^' + tahun + '-' + bulan;
-                table.column(6).search(regex, true, false); // Kolom tanggal input
-            } else {
-                table.column(6).search('');
-            }
-
-            table.draw();
+        if (bulanTahun) {
+            var [tahun, bulan] = bulanTahun.split('-');
+            var regex = '^' + tahun + '-' + bulan;
+            table.column(6).search(regex, true, false); // Kolom tanggal input
+        } else {
+            table.column(6).search('');
         }
 
-        // Event listener untuk tombol filter
-        $('#btn_filter').on('click', function() {
-            filterData();
-        });
+        table.draw();
+    }
+
+    // Event listener untuk tombol filter
+    $('#btn_filter').on('click', function() {
+        filterData();
+    });
+
 
         // Fungsi cetak laporan yang sudah ada
         function cetakLaporanPembelian() {

@@ -8,12 +8,12 @@ $id_pengguna = $this->session->userdata('id_pengguna');
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1 class="m-0">Edit Draf</h1>
+                    <h1 class="m-0">Edit Transaksi</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard'); ?>">Dashboard</a></li>
-                        <li class="breadcrumb-item">Draf</li>
+                        <li class="breadcrumb-item">Draf Transaksi</li>
                         <li class="breadcrumb-item active">Tampil Data</li>
                     </ol>
                 </div>
@@ -31,7 +31,7 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                         <div class="card card-primary card-outline">
                             <div class="card-header">
 
-                                <h5 class="card-title">Edit Data Draf</h5>
+                                <h5 class="card-title">Edit Data Transaksi</h5>
                             </div>
                             <div class="card-body">
                                 <form id="penjualanForm" method="POST" action="<?php echo base_url('transaksi/edit'); ?>">
@@ -111,6 +111,25 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="row mt-3">
+                                        <div class="col-sm-4">
+                                            <div class="form-group">
+                                                <label for="bayar">Bayar</label>
+                                                <div class="input-group">
+                                                    <input type="number" id="bayar" name="bayar" class="form-control" min="0">
+                                                    <div class="input-group-append">
+                                                        <button class="btn btn-primary" type="button" id="btnBayar">Bayar</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <div class="form-group">
+                                                <label for="kembalian">Kembalian</label>
+                                                <input type="text" id="kembalian" name="kembalian" class="form-control" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div class="form-group">
                                         <button type="button" id="updateTransaksi" class="btn btn-success btn-sm">
                                             <i class="fa fa-save"></i> Update Transaksi
@@ -134,6 +153,7 @@ $id_pengguna = $this->session->userdata('id_pengguna');
 <script>
     $(document).ready(function() {
         var keranjang = [];
+        var allBarang = <?php echo json_encode($barang); ?>;
 
         // Inisialisasi keranjang dengan data dari penjualan_items jika ada
         <?php if (isset($penjualan_items) && is_array($penjualan_items)) : ?>
@@ -211,6 +231,20 @@ $id_pengguna = $this->session->userdata('id_pengguna');
             }
         });
 
+        $(document).on("change", ".update-jumlah", function() {
+            var index = $(this).data('index');
+            var newJumlah = parseInt($(this).val());
+
+            if (newJumlah > 0) {
+                keranjang[index].jumlah = newJumlah;
+                keranjang[index].total = newJumlah * keranjang[index].harga_jual;
+                updateKeranjangTable();
+            } else {
+                alert("Jumlah harus lebih dari 0");
+                $(this).val(keranjang[index].jumlah);
+            }
+        });
+
         // Memasukkan data penjualan yang sudah ada ke dalam keranjang
         <?php
         for ($i = 0; $i < count($penjualan->id_barang_array); $i++) {
@@ -228,6 +262,21 @@ $id_pengguna = $this->session->userdata('id_pengguna');
         }
         ?>
 
+        function updateBarangOptions() {
+            $('.id_barang').each(function() {
+                var select = $(this);
+                select.empty().append('<option value="">Pilih Barang</option>');
+
+                allBarang.forEach(function(barang) {
+                    if (!keranjang.some(item => item.id_barang == barang.id_barang)) {
+                        select.append(`<option value="${barang.id_barang}" data-merk="${barang.merk}" data-bahan="${barang.bahan}" data-ukuran="${barang.ukuran}">
+                        ${barang.merk} - ${barang.bahan} - ${barang.ukuran}
+                    </option>`);
+                    }
+                });
+            });
+        }
+
         // Fungsi untuk mengupdate tampilan tabel keranjang
         function updateKeranjangTable() {
             var html = '';
@@ -235,14 +284,19 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                 html += `<tr>
                 <td>${index + 1}</td>
                 <td data-id-barang="${item.id_barang}">${item.merk} - ${item.bahan} - ${item.ukuran}</td>
-                <td>${item.jumlah}</td>
+                <td>
+                    <input type="number" class="form-control update-jumlah" value="${item.jumlah}" min="1" data-index="${index}">
+                </td>
                 <td>${item.harga_jual}</td>
                 <td>${item.jumlah * item.harga_jual}</td>
-                <td><button type="button" class="btn btn-danger btn-sm btn-remove" data-index="${index}">Hapus</button></td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm btn-remove" data-index="${index}">Hapus</button>
+                </td>
             </tr>`;
             });
             $("#keranjangTable tbody").html(html);
-            hitungTotal(); // Hitung total setelah mengupdate tampilan tabel
+            hitungTotal();
+            updateBarangOptions();
         }
 
         // Fungsi untuk menghitung subtotal, diskon, dan total
@@ -265,16 +319,31 @@ $id_pengguna = $this->session->userdata('id_pengguna');
             var index = $(this).data('index');
             keranjang.splice(index, 1);
             updateKeranjangTable();
-            hitungTotal();
         });
 
-        // Event listener untuk menyimpan transaksi
+        $("#btnBayar").click(function() {
+            var total = parseInt($("#total").val()) || 0;
+            var bayar = parseInt($("#bayar").val()) || 0;
+
+            if (bayar < total) {
+                alert("Jumlah pembayaran kurang dari total belanja!");
+                return;
+            }
+
+            var kembalian = bayar - total;
+            $("#kembalian").val(kembalian);
+
+            // Enable the "Simpan Transaksi" button after successful payment
+            $("#simpanTransaksi").prop("disabled", false);
+        });
+
         $("#updateTransaksi").click(function() {
             var id_penjualan = <?php echo $penjualan->id_penjualan; ?>;
             var id_pelanggan = $("input[name='id_pelanggan']").val();
             var diskon = $("#diskon").val().replace("Diskon 5% = ", "");
             var total = $("#total").val();
-            var subtotal = $("#subtotal").val();
+            var bayar = $("#bayar").val();
+            var kembalian = $("#kembalian").val();
 
             var id_barang_array = keranjang.map(item => item.id_barang);
             var jumlah_array = keranjang.map(item => item.jumlah);
@@ -284,21 +353,24 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                 url: '<?php echo base_url('transaksi/edit/'); ?>' + id_penjualan,
                 method: 'POST',
                 data: {
-                    id_penjualan: id_penjualan,
                     id_pelanggan: id_pelanggan,
                     diskon: diskon,
                     total: total,
-                    subtotal: subtotal,
                     id_barang: id_barang_array.join('"'),
                     jumlah: jumlah_array.join('"'),
                     harga_jual: harga_jual_array.join('"'),
+                    bayar: bayar,
+                    kembalian: kembalian,
                     status: 'Selesai'
                 },
                 dataType: 'json',
                 success: function(response) {
                     if (response.status) {
                         alert(response.message);
-                        window.location.href = '<?php echo base_url('transaksi/draf'); ?>';
+                        if (response.id_penjualan) {
+                            // Cetak struk pembayaran
+                            printReceipt(response.id_penjualan);
+                        }
                     } else {
                         alert(response.message);
                     }
@@ -309,6 +381,21 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                 }
             });
         });
+
+        function printReceipt(id_penjualan) {
+            if (!id_penjualan) {
+                alert("ID Penjualan tidak valid.");
+                return;
+            }
+
+            // Buka jendela baru untuk mencetak struk
+            var printWindow = window.open('<?= base_url('transaksi/get_struk?id_penjualan=') ?>' + id_penjualan, '_blank');
+
+            // Tunggu jendela selesai memuat, lalu cetak
+            printWindow.onload = function() {
+                printWindow.print();
+            };
+        }
 
         // Event listener untuk membatalkan transaksi
         $("#batalTransaksi").click(function() {
@@ -322,6 +409,7 @@ $id_pengguna = $this->session->userdata('id_pengguna');
 
         // Panggil updateKeranjangTable dan hitungTotal setelah halaman selesai dimuat
         updateKeranjangTable();
+        updateBarangOptions();
         hitungTotal();
     });
 </script>

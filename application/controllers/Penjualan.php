@@ -37,6 +37,29 @@ class Penjualan extends CI_Controller
         $this->load->view('template/footer');
     }
 
+    public function report()
+    {
+        $level = $this->session->userdata('level');
+
+        if (!$level) {
+            // Redirect to login page if user is not logged in
+            redirect('login');
+        }
+        $data['level'] = $level;
+
+        $this->load->model('PenjualanModel');  //mengambil function di function get_data
+        $data['penjualan'] = $this->PenjualanModel->get_data();
+        $data['barang'] = $this->BarangModel->get_data();
+        $data['user'] = $this->UserModel->get_data();
+        $data['pelanggan'] =  $this->PelangganModel->get_data();
+        $data['merk'] =  $this->MerkModel->get_data();
+        $data['title'] = "CAHAYA-APP | Penjualan";
+        $this->load->view('template/header', $data);
+        $this->load->view('template/sidebar', $data);
+        $this->load->view('laporan/laporanpenjualan', $data); //controller ngambil data dari model dikirimkan ke view
+        $this->load->view('template/footer');
+    }
+
     public function tambah()
     {
         $level = $this->session->userdata('level');
@@ -104,7 +127,20 @@ class Penjualan extends CI_Controller
         $data = $this->db->query("SELECT barang.* FROM barang WHERE id_barang = ?", array($idbarang))->row_array();
 
         echo json_encode($data);
+
     }
+
+    public function fungsi_pengambilan()
+{
+    $id_barang = $this->input->post('id_barang');
+    $barang = $this->db->get_where('barang', ['id_barang' => $id_barang])->row();
+    
+    if ($barang) {
+        echo json_encode(['setelah_diskon' => $barang->setelah_diskon]);
+    } else {
+        echo json_encode(['error' => 'Barang tidak ditemukan']);
+    }
+}
 
     public function get_sale_data($id_penjualan) {
         $sale = $this->PenjualanModel->get_sale_by_id($id_penjualan);
@@ -120,5 +156,7 @@ class Penjualan extends CI_Controller
     
         echo json_encode($data);
     }
+
+    
 
 }

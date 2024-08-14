@@ -28,6 +28,24 @@ class Pelanggan extends CI_Controller
         $this->load->view('template/footer');
     }
 
+    public function report()
+    {
+        $level = $this->session->userdata('level');
+
+        if (!$level) {
+            // Redirect to login page if user is not logged in
+            redirect('login');
+        }
+        $data['level'] = $level;
+        $this->load->model('PelangganModel');  //mengambil function di function get_data
+        $data['pelanggan'] = $this->PelangganModel->get_data();
+        $data['title'] = "CAHAYA-APP | Pelanggan";
+        $this->load->view('template/header', $data);
+        $this->load->view('template/sidebar', $data);
+        $this->load->view('laporan/laporanpelanggan', $data); //controller ngambil data dari model dikirimkan ke view
+        $this->load->view('template/footer');
+    }
+
     public function tambah()
     {
         $level = $this->session->userdata('level');
@@ -53,29 +71,33 @@ class Pelanggan extends CI_Controller
         }
     }
 
-    public function ubah($id_pelanggan)
-    {
-        $level = $this->session->userdata('level');
+    public function ubah()
+{
+    $level = $this->session->userdata('level');
 
-        if (!$level) {
-            // Redirect to login page if user is not logged in
-            redirect('login');
-        }
+    if (!$level) {
+        redirect('login');
+    }
 
-        $this->load->model('PelangganModel');
-        if (isset($_POST['simpan'])) {
-            $this->PelangganModel->update_data($id_pelanggan);
-            redirect('pelanggan');
-        } else {
-            $data['level'] = $level;
-            $data['pelanggan'] = $this->PelangganModel->get_data_byid($id_pelanggan);
-            // $data['komoditas'] = $this->db->query("SELECT * FROM komoditas");
-            $data['title'] = "CAHAYA-APP | Perbaharui Data Pelanggan";
-            $this->load->view('template/header', $data);
-            $this->load->view('template/sidebar', $data);
-            $this->load->view('pelanggan/pelanggan_ubah', $data);
-            $this->load->view('template/footer');
-        }
+    $this->load->model('PelangganModel');
+    if (isset($_POST['simpan'])) {
+        $id_pelanggan = $this->input->post('id_pelanggan');
+        $data = array(
+            'nama_pelanggan' => $this->input->post('nama_pelanggan'),
+            'alamat' => $this->input->post('alamat'),
+            'telepon' => $this->input->post('telepon'),
+            'email' => $this->input->post('email')
+        );
+        $this->PelangganModel->update_data($id_pelanggan, $data);
+        redirect('pelanggan');
+    } else {
+        redirect('pelanggan');
+    }
+}
+
+    public function get_pelanggan($id) {
+        $pelanggan = $this->PelangganModel->get_by_id($id);
+        echo json_encode($pelanggan);
     }
 
     public function hapus($id_pelanggan)

@@ -8,12 +8,12 @@ $id_pengguna = $this->session->userdata('id_pengguna');
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1 class="m-0">Penjualan</h1>
+                    <h1 class="m-0">Transaksi</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard'); ?>">Dashboard</a></li>
-                        <li class="breadcrumb-item">Penjualan</li>
+                        <li class="breadcrumb-item">Transaksi</li>
                         <li class="breadcrumb-item active">Tampil Data</li>
                     </ol>
                 </div>
@@ -38,6 +38,12 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                                 <h5 class="card-title">Tambah Data Penjualan</h5>
                             </div>
                             <div class="card-body">
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label for="date">Tanggal</label>
+                                        <input type="text" id="date" name="date" class="form-control" readonly>
+                                    </div>
+                                </div>
                                 <form id="penjualanForm" method="POST" action="<?php echo base_url('transaksi/save'); ?>">
                                     <!-- Hidden inputs for action -->
                                     <input type="hidden" id="formAction" name="formAction" value="save">
@@ -55,12 +61,18 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                                             <div class="col-sm-4">
                                                 <div class="form-group">
                                                     <label for="id_barang">Barang</label>
-                                                    <select name="id_barang[]" class="form-control id_barang">
-                                                        <option value="">Pilih Barang</option>
-                                                        <?php foreach ($barang as $o) : ?>
-                                                            <option value="<?php echo $o->id_barang ?>"><?php echo $o->merk ?> - <?php echo $o->bahan ?> - <?php echo $o->ukuran ?></option>
-                                                        <?php endforeach; ?>
-                                                    </select>
+                                                    <div class="dropdown">
+                                                        <input type="text" class="form-control dropdown-toggle" id="barangSearch" placeholder="Cari Barang" data-toggle="dropdown">
+                                                        <div class="dropdown-menu" style="width: 100%; max-height: 200px; overflow-y: auto;">
+                                                            <input type="text" class="form-control" id="dropdownSearch" placeholder="Ketik untuk mencari...">
+                                                            <div id="barangOptions">
+                                                                <?php foreach ($barang as $o) : ?>
+                                                                    <a class="dropdown-item" href="#" data-value="<?php echo $o->id_barang ?>"><?php echo $o->merk ?> - <?php echo $o->bahan ?> - <?php echo $o->ukuran ?></a>
+                                                                <?php endforeach; ?>
+                                                            </div>
+                                                        </div>
+                                                        <input type="hidden" name="id_barang[]" class="id_barang">
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="col-sm-2">
@@ -125,9 +137,8 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                                                 <label for="bayar">Bayar</label>
                                                 <div class="input-group">
                                                     <input type="number" id="bayar" name="bayar" class="form-control" min="0">
-                                                    <div class="input-group-append">
-                                                        <button class="btn btn-primary" type="button" id="btnBayar">Bayar</button>
-                                                    </div>
+                                                    <button class="btn btn-primary" type="button" id="btnBayar">Bayar</button>
+
                                                 </div>
                                             </div>
                                         </div>
@@ -160,18 +171,101 @@ $id_pengguna = $this->session->userdata('id_pengguna');
 
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script>
-    var keranjang = [];
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+<style>
+    .dropdown-menu {
+        display: none;
+    }
+
+    .dropdown-menu.show {
+        display: block;
+    }
+
+    #dropdownSearch {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+</style>
+
+<script>
     $(document).ready(function() {
-        function getHargaJual(select) {
-            var idbarang = $(select).val();
-            var row = $(select).closest('.barang-row');
+        var keranjang = [];
+        var selectedItems = new Set();
+
+        function initBarangSearch() {
+            var barangSearch = document.getElementById('barangSearch');
+            var dropdownSearch = document.getElementById('dropdownSearch');
+            var barangOptions = document.getElementById('barangOptions');
+            var idBarangInput = document.querySelector('.id_barang');
+
+            barangSearch.addEventListener('click', function() {
+                this.nextElementSibling.classList.add('show');
+            });
+
+            dropdownSearch.addEventListener('input', function() {
+                var filter = this.value.toLowerCase();
+                var items = barangOptions.getElementsByTagName('a');
+                for (var i = 0; i < items.length; i++) {
+                    var txtValue = items[i].textContent || items[i].innerText;
+                    if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                        items[i].style.display = "";
+                    } else {
+                        items[i].style.display = "none";
+                    }
+                }
+            });
+
+            barangOptions.addEventListener('click', function(e) {
+                if (e.target && e.target.nodeName == 'A') {
+                    var selectedText = e.target.textContent;
+                    var selectedValue = e.target.getAttribute('data-value');
+
+                    barangSearch.value = selectedText;
+                    idBarangInput.value = selectedValue;
+
+                    this.closest('.dropdown-menu').classList.remove('show');
+
+                    // Call getHargaJual function when a product is selected
+                    getHargaJual(idBarangInput);
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!barangSearch.contains(e.target) && !barangSearch.nextElementSibling.contains(e.target)) {
+                    barangSearch.nextElementSibling.classList.remove('show');
+                }
+            });
+        }
+
+        function updateBarangDropdown() {
+            var items = document.querySelectorAll('#barangOptions a');
+            items.forEach(function(item) {
+                if (selectedItems.has(item.getAttribute('data-value'))) {
+                    item.style.display = 'none';
+                } else {
+                    item.style.display = '';
+                }
+            });
+        }
+
+        function calculateRowTotal(row) {
+            var jumlah = parseInt(row.find('.jumlah').val()) || 0;
+            var harga_jual = parseInt(row.find('.setelah_diskon').val()) || 0;
+            var total = jumlah * harga_jual;
+            row.find('.total').val(total);
+        }
+
+        function getHargaJual(idBarangInput) {
+            var idbarang = $(idBarangInput).val();
+            var row = $(idBarangInput).closest('.barang-row');
 
             if (idbarang) {
                 $.ajax({
-                    url: '<?php echo base_url('Penjualan/fungsi_pengambilan_data'); ?>',
+                    url: '<?php echo base_url('Penjualan/fungsi_pengambilan'); ?>',
                     method: 'post',
                     data: {
                         id_barang: idbarang
@@ -180,6 +274,8 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                     success: function(data) {
                         if (data && data.setelah_diskon) {
                             row.find('.setelah_diskon').val(data.setelah_diskon);
+                            // Trigger perhitungan total
+                            calculateRowTotal(row);
                         } else {
                             alert("Data tidak ditemukan untuk barang tersebut");
                         }
@@ -193,59 +289,20 @@ $id_pengguna = $this->session->userdata('id_pengguna');
             }
         }
 
-        $(document).on('change', '.id_barang', function() {
-            getHargaJual(this);
-        });
-
-        $(".btn-add").click(function() {
-            var row = $(this).closest('.barang-row');
-            var id_barang = row.find(".id_barang").val();
-            var jumlah = row.find(".jumlah").val();
-            var harga_jual = row.find(".setelah_diskon").val();
-            var nama_barang = row.find(".id_barang option:selected").text();
-
-            if (id_barang || jumlah || harga_jual) {
-                var total = parseInt(jumlah || 0) * parseInt(harga_jual || 0);
-                keranjang.push({
-                    id_barang: id_barang || null,
-                    nama_barang: nama_barang || 'Barang Tidak Terdaftar',
-                    jumlah: jumlah || 0,
-                    harga_jual: harga_jual || 0,
-                    total: total
-                });
-
-                updateKeranjangTable();
-                hitungTotal();
-
-                row.find(".id_barang").val('');
-                row.find(".jumlah").val('');
-                row.find(".setelah_diskon").val('');
-            } else {
-                alert("Mohon isi minimal satu field");
-            }
-        });
-
         function updateKeranjangTable() {
             var html = '';
             keranjang.forEach(function(item, index) {
                 html += '<tr>';
                 html += '<td>' + (index + 1) + '</td>';
                 html += '<td>' + (item.nama_barang || 'Barang Tidak Terdaftar') + '</td>';
-                html += '<td>' + (item.jumlah || 0) + '</td>';
+                html += '<td><input type="number" class="form-control jumlah-update" value="' + (item.jumlah || 0) + '" data-index="' + index + '"></td>';
                 html += '<td>' + (item.harga_jual || 0) + '</td>';
-                html += '<td>' + item.total + '</td>';
+                html += '<td class="total">' + item.total + '</td>';
                 html += '<td><button type="button" class="btn btn-danger btn-sm btn-remove" data-index="' + index + '">Hapus</button></td>';
                 html += '</tr>';
             });
             $("#keranjangTable tbody").html(html);
         }
-
-        $(document).on("click", ".btn-remove", function() {
-            var index = $(this).data('index');
-            keranjang.splice(index, 1);
-            updateKeranjangTable();
-            hitungTotal();
-        });
 
         function hitungTotal() {
             var subtotal = keranjang.reduce((sum, item) => sum + item.total, 0);
@@ -267,98 +324,17 @@ $id_pengguna = $this->session->userdata('id_pengguna');
         }
 
         function printReceipt(id_penjualan) {
-            $.ajax({
-                url: '<?= base_url('penjualan/get_sale_data/') ?>' + id_penjualan,
-                type: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    if (!data || !data.items || !Array.isArray(data.items)) {
-                        alert('Data penjualan tidak valid');
-                        return;
-                    }
-
-                    var receiptHTML = `
-            <div style="width: 500px; font-family: Arial, sans-serif;">
-                <h2 style="text-align: center;">NOTA PENJUALAN</h2>
-                <h3 style="text-align: center;">TOKO CAHAYA - APP</h3>
-                <p style="text-align: center; font-size: 12px;">
-                    Jl. Sasaran, Keraton, Kec. Martapura, Kota Martapura, Kalimantan Selatan 70714<br>
-                    No. Hp/WA : 089530594535<br>
-                    Jam Operasional : Senin - Sabtu : 09.00 - 16.00
-                </p>
-                <hr>
-                <p>No. Faktur : ${data.id_penjualan}</p>
-                <p>Pelanggan : ${data.nama_pelanggan}</p>
-                <table style="width: 100%; border-collapse: collapse;">
-                    <tr>
-                        <th style="border: 1px solid black;">Barang</th>
-                        <th style="border: 1px solid black;">jumlah</th>
-                        <th style="border: 1px solid black;">Harga Jual</th>
-                        <th style="border: 1px solid black;">Diskon</th>
-                        <th style="border: 1px solid black;">total</th>
-                    </tr>
-                    ${data.items.map(item => `
-                        <tr>
-                            <td style="border: 1px solid black;">
-                               ${item.merk || 'N/A'} - ${item.bahan || 'N/A'} - ${item.ukuran || 'N/A'}
-                            </td>
-                            <td style="border: 1px solid black;">
-                               ${item.jumlah.split('"').map(j => j.trim()).filter(j => j !== '').join('<br>')}
-                            </td>
-                            <td style="border: 1px solid black;">${item.harga_jual || '0'}</td>
-                            <td style="border: 1px solid black;">${item.diskon || 'Tidak ada diskon'}</td>
-                            <td style="border: 1px solid black;">${item.total || '0'}</td>
-                        </tr>
-                    `).join('')}
-                </table>
-                <p style="text-align: right;">Total Bayar: Rp ${data.total_bayar || '0'}</p>
-                <p style="text-align: center;">----- TERIMA KASIH -----</p>
-                <p style="text-align: center; font-size: 12px;">Barang yang sudah dibeli tidak dapat DITUKAR/DIKEMBALIKAN</p>
-            </div>
-            `;
-
-                    var printWindow = window.open('', '_blank');
-                    printWindow.document.write(receiptHTML);
-                    printWindow.document.close();
-                    printWindow.print();
-                    printWindow.onafterprint = function() {
-                        printWindow.close();
-                    };
-                },
-                error: function() {
-                    alert('Gagal mengambil data penjualan');
-                }
-            });
-        }
-
-        $("#simpanTransaksi").click(function() {
-            saveTransaction('Selesai');
-        });
-
-        $("#simpanTransaksi").click(function() {
-            saveTransaction('Selesai');
-        });
-
-        $("#draf").click(function() {
-            saveTransaction('Pending');
-        });
-
-
-        $("#btnBayar").click(function() {
-            var total = parseInt($("#total").val()) || 0;
-            var bayar = parseInt($("#bayar").val()) || 0;
-
-            if (bayar < total) {
-                alert("Jumlah pembayaran kurang dari total belanja!");
+            if (!id_penjualan) {
+                alert("ID Penjualan tidak valid.");
                 return;
             }
 
-            var kembalian = bayar - total;
-            $("#kembalian").val(kembalian);
+            var printWindow = window.open('<?= base_url('transaksi/get_struk?id_penjualan=') ?>' + id_penjualan, '_blank');
 
-            // Enable the "Simpan Transaksi" button after successful payment
-            $("#simpanTransaksi").prop("disabled", false);
-        });
+            printWindow.onload = function() {
+                printWindow.print();
+            };
+        }
 
         function saveTransaction(status) {
             var id_pelanggan = $("#id_pelanggan").val();
@@ -367,6 +343,8 @@ $id_pengguna = $this->session->userdata('id_pengguna');
             var id_barang = [];
             var jumlah = [];
             var harga_jual = [];
+            var bayar = $("#bayar").val();
+            var kembalian = $("#kembalian").val();
 
             keranjang.forEach(function(item) {
                 if (item.id_barang !== null) {
@@ -387,17 +365,17 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                         id_barang: id_barang,
                         jumlah: jumlah,
                         harga_jual: harga_jual,
-                        status: status
+                        status: status,
+                        bayar: bayar,
+                        kembalian: kembalian
                     },
                     dataType: 'json',
                     success: function(response) {
                         if (response.status) {
                             alert(response.message);
-                            if (status === 'Selesai') {
-                                // Cetak struk pembayaran
-                                printStruk(response.id_penjualan);
+                            if (status === 'Selesai' && response.id_penjualan) {
+                                printReceipt(response.id_penjualan);
                             }
-                            // Reset form and cart
                             keranjang = [];
                             updateKeranjangTable();
                             hitungTotal();
@@ -408,56 +386,127 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                     },
                     error: function(xhr, status, error) {
                         console.error('AJAX Error:', status, error);
-                        alert('Terjadi kesalahan saat menyimpan transaksi: ' + error);
+                        console.log(xhr.responseText);
+                        alert('Terjadi kesalahan saat menyimpan transaksi. Silakan coba lagi atau hubungi administrator.');
                     }
                 });
             } else {
                 alert('Pelanggan dan total tidak boleh kosong');
             }
         }
-    });
 
-    function printStruk(id_penjualan) {
-        // Buka jendela baru untuk struk
-        var printWindow = window.open('', '_blank');
+        initBarangSearch();
 
-        // Ambil data struk dari server
-        $.ajax({
-            url: '<?php echo base_url('transaksi/get_struk'); ?>',
-            method: 'GET',
-            data: {
-                id_penjualan: id_penjualan
-            },
-            dataType: 'html',
-            success: function(response) {
-                // Tulis konten struk ke jendela baru
-                printWindow.document.write(response);
-                printWindow.document.close();
+        $(document).on('change', '.id_barang', function() {
+            getHargaJual(this);
+        });
 
-                // Tunggu gambar dan stylesheet dimuat
-                printWindow.onload = function() {
-                    // Cetak halaman
-                    printWindow.print();
-                    // Tutup jendela setelah mencetak
-                    printWindow.onafterprint = function() {
-                        printWindow.close();
-                    };
-                };
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX Error:', status, error);
-                alert('Terjadi kesalahan saat mengambil data struk: ' + error);
-                printWindow.close();
+        $(".btn-add").click(function() {
+            var row = $(this).closest('.barang-row');
+            var id_barang = row.find(".id_barang").val();
+            var jumlah = row.find(".jumlah").val();
+            var harga_jual = row.find(".setelah_diskon").val();
+            var nama_barang = row.find("#barangSearch").val();
+
+            if (id_barang && jumlah && harga_jual) {
+                var total = parseInt(jumlah || 0) * parseInt(harga_jual || 0);
+                keranjang.push({
+                    id_barang: id_barang || null,
+                    nama_barang: nama_barang || 'Barang Tidak Terdaftar',
+                    jumlah: jumlah || 0,
+                    harga_jual: harga_jual || 0,
+                    total: total
+                });
+
+                selectedItems.add(id_barang);
+                updateBarangDropdown();
+                updateKeranjangTable();
+                hitungTotal();
+
+                // Reset input fields
+                row.find("#barangSearch").val('');
+                row.find(".id_barang").val('');
+                row.find(".jumlah").val('');
+                row.find(".setelah_diskon").val('');
+            } else {
+                alert("Mohon isi semua field");
             }
         });
-    }
 
-    $("#batalTransaksi").click(function() {
-        if (confirm('Apakah Anda yakin ingin membatalkan transaksi?')) {
-            keranjang = [];
+        $(document).on("click", ".btn-remove", function() {
+            var index = $(this).data('index');
+            var removedItem = keranjang[index];
+            keranjang.splice(index, 1);
+            selectedItems.delete(removedItem.id_barang);
+            updateBarangDropdown();
             updateKeranjangTable();
             hitungTotal();
-            $("#penjualanForm")[0].reset();
-        }
+        });
+
+        $(document).on("change", ".jumlah-update", function() {
+            var index = $(this).data('index');
+            var newJumlah = parseInt($(this).val()) || 0;
+            keranjang[index].jumlah = newJumlah;
+            keranjang[index].total = newJumlah * keranjang[index].harga_jual;
+            updateKeranjangTable();
+            hitungTotal();
+        });
+
+        $("#simpanTransaksi").click(function() {
+            saveTransaction('Selesai');
+        });
+
+        $("#draf").click(function() {
+            saveTransaction('Pending');
+        });
+
+        $("#btnBayar").click(function() {
+            var total = parseInt($("#total").val()) || 0;
+            var bayar = parseInt($("#bayar").val()) || 0;
+
+            if (bayar < total) {
+                alert("Jumlah pembayaran kurang dari total belanja!");
+                return;
+            }
+
+            var kembalian = bayar - total;
+            $("#kembalian").val(kembalian);
+
+            $("#simpanTransaksi").prop("disabled", false);
+        });
+
+        $("#batalTransaksi").click(function() {
+            if (confirm('Apakah Anda yakin ingin membatalkan transaksi?')) {
+                keranjang = [];
+                updateKeranjangTable();
+                hitungTotal();
+                $("#penjualanForm")[0].reset();
+            }
+        });
+    });
+</script>
+
+
+<script>
+    function formatDateTime(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
+    function updateDateTime() {
+        const now = new Date();
+        const dateTimeString = formatDateTime(now);
+        document.getElementById('date').value = dateTimeString;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateDateTime(); // Initial update
+        setInterval(updateDateTime, 1000); // Update every second
     });
 </script>

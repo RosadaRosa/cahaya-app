@@ -23,6 +23,7 @@ class Stokkurang extends CI_Controller
         $this->load->model('StokkurangModel');  //mengambil function di function get_data
         $data['barang'] = $this->StokkurangModel->get_data();
         $data['kategori'] = $this->KategoriModel->get_data();
+        $data['stok_kurang'] = $this->StokkurangModel->get_stok_kurang(); // Fetch low stock data
         $data['title'] = "CAHAYA-APP | stokkurang";
         $this->load->view('template/header', $data);
         $this->load->view('template/sidebar', $data);

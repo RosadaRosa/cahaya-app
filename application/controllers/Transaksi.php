@@ -111,7 +111,7 @@ class Transaksi extends CI_Controller
             $this->load->view('transaksi/draf_edit', $data);
             $this->load->view('template/footer');
         }
-    }    
+    }
 
     public function hapus($id_penjualan)
     {
@@ -148,45 +148,76 @@ class Transaksi extends CI_Controller
 
     public function save()
     {
+        // Pastikan semua output adalah JSON
         $this->output->set_content_type('application/json');
-        $result = $this->PenjualanModel->save_data();
 
-        if ($result) {
-            $this->output->set_output(json_encode(['status' => true, 'message' => 'Transaksi berhasil disimpan']));
-        } else {
-            $this->output->set_output(json_encode(['status' => false, 'message' => 'Transaksi gagal disimpan. Silakan cek log untuk detailnya.']));
+        // Tangkap semua output yang mungkin terjadi
+        ob_start();
+
+        try {
+            $id_penjualan = $this->PenjualanModel->save_data();
+
+            if ($id_penjualan) {
+                $response = [
+                    'status' => true,
+                    'message' => 'Transaksi berhasil disimpan',
+                    'id_penjualan' => $id_penjualan
+                ];
+            } else {
+                $response = [
+                    'status' => false,
+                    'message' => 'Transaksi gagal disimpan. Silakan cek log untuk detailnya.'
+                ];
+            }
+        } catch (Exception $e) {
+            $response = [
+                'status' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ];
         }
+
+        // Bersihkan output buffer
+        ob_end_clean();
+
+        // Kirimkan respons dalam format JSON
+        echo json_encode($response);
     }
 
     public function edit($id_penjualan)
-    {
-        $this->output->set_content_type('application/json');
+{
+    $this->output->set_content_type('application/json');
+    
+    $id_barang_array = explode('"', $this->input->post('id_barang'));
+    $jumlah_array = explode('"', $this->input->post('jumlah'));
+    $harga_jual_array = explode('"', $this->input->post('harga_jual'));
+    
+    $data = [
+        'id_pelanggan' => $this->input->post('id_pelanggan'),
+        'id_barang' => $this->input->post('id_barang'),
+        'jumlah' => $this->input->post('jumlah'),
+        'harga_jual' => $this->input->post('harga_jual'),
+        'diskon' => $this->input->post('diskon'),
+        'total' => $this->input->post('total'),
+        'bayar' => $this->input->post('bayar'),
+        'kembalian' => $this->input->post('kembalian'),
+        'status' => $this->input->post('status')
+    ];
 
-        $id_barang = $this->input->post('id_barang');
-        $jumlah = $this->input->post('jumlah');
-        $harga_jual = $this->input->post('harga_jual');
-
-        $data = [
-            'id_pelanggan' => $this->input->post('id_pelanggan'),
-            'id_barang' => $id_barang,
-            'jumlah' => $jumlah,
-            'harga_jual' => $harga_jual,
-            'diskon' => $this->input->post('diskon'),
-            'total' => $this->input->post('total'),
-            'status' => $this->input->post('status')
-        ];
-
-        $result = $this->PenjualanModel->update_data($id_penjualan, $data);
-
-        if ($result) {
-            $this->output->set_output(json_encode([
-                'status' => true,
-                'message' => 'Transaksi berhasil diubah'
-            ]));
-        } else {
-            $this->output->set_output(json_encode(['status' => false, 'message' => 'Transaksi gagal diubah. Silakan cek log untuk detailnya.']));
-        }
+    $result = $this->PenjualanModel->update_data($id_penjualan, $data);
+    
+    if ($result) {
+        $this->output->set_output(json_encode([
+            'status' => true,
+            'message' => 'Transaksi berhasil diubah',
+            'id_penjualan' => $id_penjualan
+        ]));
+    } else {
+        $this->output->set_output(json_encode([
+            'status' => false,
+            'message' => 'Transaksi gagal diubah. Silakan cek log untuk detailnya.'
+        ]));
     }
+}
 
     private function save_data()
     {
@@ -238,16 +269,28 @@ class Transaksi extends CI_Controller
         $this->load->view('template/footer');
     }
 
-    public function get_struk() {
+    public function get_struk()
+    {
         $id_penjualan = $this->input->get('id_penjualan');
-        
+
         // Ambil data transaksi dan item dari database
         $transaksi = $this->PenjualanModel->get_transaksi($id_penjualan);
         $items = $this->PenjualanModel->get_transaksi_items($id_penjualan);
-        
+        $data['barang']= $this->BarangModel->get_data();
+
+        if (!$transaksi) {
+            echo "Transaksi tidak ditemukan untuk ID: " . $id_penjualan;
+            return;
+        }
+
+        if (empty($items)) {
+            echo "Tidak ada item ditemukan untuk transaksi ini.";
+            return;
+        }
+
         // Load view struk
         $data['transaksi'] = $transaksi;
         $data['items'] = $items;
-        $this->load->view('struk', $data);
+        $this->load->view('report/struk', $data);
     }
 }

@@ -94,7 +94,9 @@
                                 <h5 class="card-title">Penjualan Terlaris per Bulan</h5>
                             </div>
                             <div class="card-body">
-                                <canvas id="monthlyChart"></canvas>
+                                <div class="col">
+                                <canvas id="main" width="500" height="300"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -106,7 +108,7 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
 
     <script>
         function printTerlarisReport() {
@@ -142,53 +144,68 @@
     </div>
     `;
 
-            var originalContents = document.body.innerHTML;
-            document.body.innerHTML = printContents;
-            window.print();
-            document.body.innerHTML = originalContents;
-        }
+    var originalContents = document.body.innerHTML;
+        document.body.innerHTML = printContents;
+        window.print();
+        document.body.innerHTML = originalContents;
+    }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            var ctx = document.getElementById('monthlyChart').getContext('2d');
-            var monthlyData = <?php echo json_encode($monthly_data); ?>;
+    // Data for the bar chart
+    const terlarisData = <?php echo json_encode($terlaris); ?>;
+    const labels = terlarisData.map(data => `${data.merk} - ${data.bahan} - ${data.ukuran}`);
+    const dataValues = terlarisData.map(data => data.total_terjual);
 
-            var labels = monthlyData.map(function(item) {
-                return item.month;
-            });
+    // Generate a list of colors
+    const colors = ['#6F9EC0', '#9FC5E8', '#B4D9D4', '#E3E0C9', '#F2B5D4', '#EAD1DC', '#D0E0F0', '#D9EAD3', '#CFE2F3', '#F6D3D3'];
 
-            var data = monthlyData.map(function(item) {
-                return item.total_terjual;
-            });
+    // Initialize ECharts
+    var chart = echarts.init(document.getElementById('main'));
 
-            var backgroundColors = [
-                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
-                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
-            ];
-
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: backgroundColors
-                    }]
+    // Option for the bar chart
+    var option = {
+        title: {
+            text: 'Grafik Barang Terlaris',
+            left: 'center'
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function(params) {
+                const item = params[0];
+                return `${item.name}<br>Jumlah Terjual: ${item.value}`;
+            }
+        },
+        xAxis: {
+            type: 'category',
+            data: labels,
+            axisLabel: {
+                rotate: 45, // Rotate labels to fit longer text
+                interval: 0 // Show all labels
+            }
+        },
+        yAxis: {
+            type: 'value',
+            name: 'Jumlah Terjual'
+        },
+        series: [
+            {
+                name: 'Total Terjual',
+                type: 'bar',
+                data: dataValues,
+                emphasis: {
+                    focus: 'series'
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                        },
-                        title: {
-                            display: true,
-                            text: 'Penjualan Barang Terlaris per Bulan'
-                        }
+                itemStyle: {
+                    color: function(params) {
+                        // Use color from the list based on the index of the item
+                        return colors[params.dataIndex % colors.length];
                     }
                 }
-            });
-        });
+            }
+        ]
+    };
+
+    // Use the specified configuration and data to show the chart.
+    chart.setOption(option);
     </script>
 
 </body>

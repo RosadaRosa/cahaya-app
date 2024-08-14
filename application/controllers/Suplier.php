@@ -8,6 +8,12 @@ class Suplier extends CI_Controller
     {
         parent::__construct();
         $this->load->model('SuplierModel');
+        $this->load->model('PembelianModel');
+        $this->load->model('UserModel');
+        $this->load->model('BarangModel');
+        $this->load->model('PenjualanModel');
+        $this->load->model('MerkModel');
+        $this->load->model('KategoriModel');
     }
 
     public function index()
@@ -27,6 +33,30 @@ class Suplier extends CI_Controller
         $this->load->view('pelanggan/suplier_tampil', $data); //controller ngambil data dari model dikirimkan ke view
         $this->load->view('template/footer');
     }
+
+    public function report()
+    {
+        $level = $this->session->userdata('level');
+
+        if (!$level) {
+            // Redirect to login page if user is not logged in
+            redirect('login');
+        }
+
+        $data['level'] = $level;
+        $this->load->model('SuplierModel');  //mengambil function di function get_data
+        $data['pembelian'] = $this->PembelianModel->get_data();
+        $data['barang'] = $this->BarangModel->get_data();
+        $data['user'] = $this->UserModel->get_data();
+        $data['suplier'] =  $this->SuplierModel->get_data();
+        $data['merk'] =  $this->MerkModel->get_data();
+        $data['title'] = "CAHAYA-APP | Suplier";
+        $this->load->view('template/header', $data);
+        $this->load->view('template/sidebar', $data);
+        $this->load->view('laporan/laporansuplier', $data); //controller ngambil data dari model dikirimkan ke view
+        $this->load->view('template/footer');
+    }
+
 
     public function tambah()
     {

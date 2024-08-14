@@ -37,23 +37,24 @@
                 </div>
                 <div class="form-group">
                   <label for="password">Password</label>
-                  <input type="text" name="password" id="password" class="form-control" value="<?= $User-> password ?>" required>
+                  <input type="text" name="password" id="password" class="form-control" value="<?= $User->password ?>" required>
                 </div>
                 <div class="form-group">
                   <label for="level">Status</label>
-                  <select name="level" id="level" class="form-control" value="<?= $User->level ?>" required>
-                    <option value=""> Pilih Status</option>
-                    <option value="1"> Admin</option>
-                    <option value="2"> Pegawai</option>
+                  <select name="level" id="level" class="form-control" required>
+                    <option value="">Pilih Status</option>
+                    <option value="1" <?= ($User->level == '1') ? 'selected' : '' ?>>Admin</option>
+                    <option value="2" <?= ($User->level == '2') ? 'selected' : '' ?>>Pegawai</option>
                   </select>
                 </div>
+
                 <div class="form-group">
                   <label for="nama_lengkap">Nama Lengkap</label>
-                  <input type="text" name="nama_lengkap" id="nama_lengkap" class="form-control" value="<?= $User->nama_lengkap?>"required>
+                  <input type="text" name="nama_lengkap" id="nama_lengkap" class="form-control" value="<?= $User->nama_lengkap ?>" required>
                 </div>
                 <div class="form-group">
                   <label for="alamat">Alamat</label>
-                  <input type="text" name="alamat" id="alamat" class="form-control" value="<?= $User->nama_lengkap?>"required>
+                  <input type="text" name="alamat" id="alamat" class="form-control" value="<?= $User->nama_lengkap ?>" required>
                 </div>
                 <div class="form-group">
                   <label for="telepon">No Telepon</label>

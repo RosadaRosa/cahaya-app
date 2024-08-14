@@ -10,6 +10,8 @@ class Labarugi extends CI_Controller
         $this->load->model('PenjualanModel');
         $this->load->model('PembelianModel');
         $this->load->model('PengeluaranModel');
+        $this->load->model('BarangModel');
+        $this->load->model('MerkModel');
     }
 
     //url CI = localhost/nama folder project/nama controller/Nama function/
@@ -21,13 +23,18 @@ class Labarugi extends CI_Controller
             // Redirect to login page if user is not logged in
             redirect('login');
         }
-
+        $dari_tanggal  = $this->input->post('dari_tanggal'); 
+        $sampai_tanggal = $this->input->post('sampai_tanggal'); 
         $data['level'] = $level;
         $this->load->model('LabarugiModel');  //mengambil function di function get_data
-        $data['penjualan'] = $this->PenjualanModel->get_data();
-        $data['pembelian'] = $this->PembelianModel->get_data();
-        $data['pengeluaran'] = $this->PengeluaranModel->get_data();
+        $data['penjualan'] = $this->PenjualanModel->get_data_report($dari_tanggal,$sampai_tanggal);
+        $data['pembelian'] = $this->PembelianModel->get_data_report($dari_tanggal,$sampai_tanggal);
+        $data['barang'] = $this->BarangModel->get_data();
+        $data['pengeluaran'] = $this->PengeluaranModel->get_data_report($dari_tanggal,$sampai_tanggal);
+        $data['dari_tanggal'] = $dari_tanggal; 
+        $data['sampai_tanggal'] = $sampai_tanggal;
         $data['title'] = "CAHAYA-APP | Barang";
+        
         $this->load->view('template/header', $data);
         $this->load->view('template/sidebar', $data);
         $this->load->view('laporan/labarugi', $data); //controller ngambil data dari model dikirimkan ke view

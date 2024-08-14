@@ -3,7 +3,7 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1 class="m-0">Stok Kurang</h1>
+                    <h1 class="m-0">Stok Barang Kurang</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
@@ -21,20 +21,22 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="card card-primary card-outline">
-    
+
                         <div class="card-header">
-                            <h5 class="card-title">Data Stok Kurang</h5>
+                            <h5 class="card-title">Data Stok Barang Kurang</h5>
                             <button onclick="printStockReport()" class="btn btn-info btn-sm float-right mr-2"><i class="fa fa-print"></i> Cetak Laporan</button>
                         </div>
                         <div class="card-body">
-                        <div class="form-group">
-                                <label for="filter_kategori">Filter Kategori</label>
-                                <select id="filter_kategori" class="form-control">
-                                    <option value="">Semua Kategori</option>
-                                    <?php foreach ($kategori as $kat) : ?>
-                                        <option value="<?= $kat->id_kategori; ?>"><?= $kat->nama_kategori; ?></option>
-                                    <?php endforeach; ?>
-                                </select>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="filter_kategori">Filter Kategori</label>
+                                    <select id="filter_kategori" class="form-control">
+                                        <option value="">Semua Kategori</option>
+                                        <?php foreach ($kategori as $kat) : ?>
+                                            <option value="<?= $kat->id_kategori; ?>"><?= $kat->nama_kategori; ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
                             </div>
                             <table id="example" class="table table-hover table-bordered">
                                 <thead>
@@ -46,7 +48,8 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php $no = 1; foreach ($barang as $row) : ?>
+                                    <?php $no = 1;
+                                    foreach ($barang as $row) : ?>
                                         <tr data-kategori="<?= $row->id_kategori; ?>">
                                             <td><?= $no++ ?></td>
                                             <td><?= $row->nama_kategori; ?></td>
@@ -150,4 +153,3 @@
         };
     });
 </script>
-

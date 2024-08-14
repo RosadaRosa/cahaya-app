@@ -42,7 +42,7 @@ class Login extends CI_Controller
                         redirect('Dashboard');
                         break;
                     case "2":
-                        redirect('User');
+                        redirect('Dashboard');
                         break;
                     default:
                         break;

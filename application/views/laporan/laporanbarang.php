@@ -32,7 +32,6 @@
                     <div class="card card-primary card-outline">
                         <div class="card-header">
                             <h5 class="card-title">Data Barang</h5>
-                            <a href="<?= base_url('barang/tambah') ?>" class="btn btn-primary btn-sm float-right"><i class="fa fa-plus"></i> Tambah Data</a>
                             <button onclick="printBarangReport()" class="btn btn-info btn-sm float-right mr-2"><i class="fa fa-print"></i> Cetak Laporan</button>
                         </div>
 
@@ -48,7 +47,6 @@
                                         <th>Harga Beli</th>
                                         <th>Harga Jual</th>
                                         <th>Setelah Diskon</th>
-                                        <th>Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -63,13 +61,6 @@
                                             <td><?= $row->harga_beli; ?></td>
                                             <td><?= $row->harga_jual; ?></td>
                                             <td><?= $row->setelah_diskon; ?></td>
-                                            <td>
-                                                <div class="btn-group">
-                                                    <a href="<?= base_url('barang/ubah/' . $row->id_barang) ?>" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></a>
-                                                    <a href="<?= base_url('barang/hapus/' . $row->id_barang) ?>" onclick="return confirm('Hapus Data Ini?'); " class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></a>
-                                                    <a href="#" class="btn btn-success btn-sm btn-diskon" data-id="<?= $row->id_barang ?>" data-harga="<?= $row->harga_jual ?>"><i class="">Diskon</i></a>
-                                                </div>
-                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>

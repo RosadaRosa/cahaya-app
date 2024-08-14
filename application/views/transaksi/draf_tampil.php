@@ -8,12 +8,12 @@ $id_pengguna = $this->session->userdata('id_pengguna');
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1 class="m-0">Tampil Draf</h1>
+                    <h1 class="m-0">Tampil Draf Transaksi</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard'); ?>">Dashboard</a></li>
-                        <li class="breadcrumb-item">Draf</li>
+                        <li class="breadcrumb-item">Draf Transaksi</li>
                         <li class="breadcrumb-item active">Tampil Data</li>
                     </ol>
                 </div>
@@ -28,7 +28,7 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                 <div class="col-lg-12">
                     <div class="card card-primary card-outline">
                         <div class="card-header">
-                            <h5 class="card-title">Data Penjualan</h5>
+                            <h5 class="card-title">Data Draf Transaksi</h5>
                             <?php if ($level != "admin" && $level != "pengawas") : ?>
                                 <a href="<?= base_url('transaksi') ?>" class="btn btn-primary btn-sm float-right"><i class="fa fa-plus"></i>Transaksi Baru</a>
                             <?php endif; ?>

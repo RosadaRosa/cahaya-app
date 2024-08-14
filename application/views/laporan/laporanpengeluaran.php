@@ -29,9 +29,8 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                     <div class="card card-primary card-outline">
                         <div class="card-header">
                             <h5 class="card-title">Data Pengeluaran</h5>
-                            <?php if ($level != "admin" && $level != "pengawas") : ?>
-                                <a href="<?= base_url('pengeluaran/tambah') ?>" class="btn btn-primary btn-sm float-right"><i class="fa fa-plus"></i> Tambah Data</a>
-                            <?php endif; ?>
+                            <div class="form-group">
+                            </div>
                             <button onclick="cetakLaporanPengeluaran()" class="btn btn-info btn-sm float-right mr-2"><i class="fa fa-print"></i> Cetak Laporan</button>
                         </div>
                         <div class="card-body">
@@ -44,7 +43,7 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                                             <th>Harga</th>
                                             <th>Tanggal Input</th>
                                             <th>Penambah</th>
-                                            <th>Aksi</th>
+
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -56,12 +55,7 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                                                 <td><?= $row->harga; ?></td>
                                                 <td><?= $row->tgl_input; ?></td>
                                                 <td><?= $row->penambah; ?></td>
-                                                <td>
-                                                    <div class="btn-group">
-                                                        <a href="<?= base_url('pengeluaran/ubah/' . $row->id_pengeluaran) ?>" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></a>
-                                                        <button class="btn btn-danger btn-sm" onclick="confirmDeletion('<?= $row->id_pengeluaran; ?>')"><i class="fa fa-trash"></i></button>
-                                                    </div>
-                                                </td>
+
                                             </tr>
                                         <?php endforeach; ?>
                                     </tbody>
@@ -99,25 +93,15 @@ $id_pengguna = $this->session->userdata('id_pengguna');
 </div>
 
 <script>
-function confirmDeletion(id) {
-    if (confirm('Apakah Anda yakin ingin menghapus item ini?')) {
-        // Jika pengguna mengonfirmasi, alihkan ke URL penghapusan
-        window.location.href = '<?= base_url('pengeluaran/hapus/'); ?>' + id;
-    }
-}
-</script>
-
-
-<script>
-function cetakLaporanPengeluaran() {
-    // Fetch the expenditure data
-    $.ajax({
-        url: '<?= base_url('pengeluaran/get_pengeluaran_data') ?>',
-        type: 'GET',
-        dataType: 'json',
-        success: function(data) {
-            // Generate the report HTML
-            var reportHTML = `
+    function cetakLaporanPengeluaran() {
+        // Fetch the expenditure data
+        $.ajax({
+            url: '<?= base_url('pengeluaran/get_pengeluaran_data') ?>',
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                // Generate the report HTML
+                var reportHTML = `
             <div style="width: 100%; font-family: Arial, sans-serif;">
                 <h2 style="text-align: center;">Laporan Pengeluaran</h2>
                 <h3 style="text-align: center;">TOKO CAHAYA - APP</h3>
@@ -148,19 +132,19 @@ function cetakLaporanPengeluaran() {
             </div>
             `;
 
-            // Open a new window and write the report HTML to it
-            var printWindow = window.open('', '_blank');
-            printWindow.document.write('<html><head><title>Laporan Pengeluaran</title></head><body>');
-            printWindow.document.write(reportHTML);
-            printWindow.document.write('</body></html>');
-            printWindow.document.close();
+                // Open a new window and write the report HTML to it
+                var printWindow = window.open('', '_blank');
+                printWindow.document.write('<html><head><title>Laporan Pengeluaran</title></head><body>');
+                printWindow.document.write(reportHTML);
+                printWindow.document.write('</body></html>');
+                printWindow.document.close();
 
-            // Trigger the print dialog
-            printWindow.print();
-        },
-        error: function() {
-            alert('Gagal mengambil data pengeluaran');
-        }
-    });
-}
+                // Trigger the print dialog
+                printWindow.print();
+            },
+            error: function() {
+                alert('Gagal mengambil data pengeluaran');
+            }
+        });
+    }
 </script>

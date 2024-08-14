@@ -29,8 +29,46 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                     <div class="card card-primary card-outline">
                         <div class="card-header">
                             <h5 class="card-title">Data Penjualan</h5>
+                            <button onclick="printPenjualanReport()" class="btn btn-info btn-sm float-right mr-2"><i class="fa fa-print"></i> Cetak Laporan</button>
                         </div>
                         <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label for="filter_barang">Pilih Barang:</label>
+                                    <select id="filter_barang" class="form-control">
+                                        <option value="">Semua Barang</option>
+                                        <?php foreach ($barang as $item) : ?>
+                                            <option value="<?= $item->merk . ' - ' . $item->bahan . ' - ' . $item->ukuran ?>">
+                                                <?= $item->merk . ' - ' . $item->bahan . ' - ' . $item->ukuran ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="filter_bulan">Pilih Bulan:</label>
+                                    <select id="filter_bulan" class="form-control">
+                                        <option value="">Semua Bulan</option>
+                                        <?php for ($i = 1; $i <= 12; $i++) : ?>
+                                            <option value="<?= sprintf('%02d', $i) ?>"><?= date('F', mktime(0, 0, 0, $i, 1)) ?></option>
+                                        <?php endfor; ?>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="filter_tahun">Pilih Tahun:</label>
+                                    <select id="filter_tahun" class="form-control">
+                                        <option value="">Semua Tahun</option>
+                                        <?php
+                                        $currentYear = date('Y');
+                                        for ($year = $currentYear; $year >= $currentYear - 5; $year--) :
+                                        ?>
+                                            <option value="<?= $year ?>"><?= $year ?></option>
+                                        <?php endfor; ?>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button id="btn_filter" class="btn btn-primary">Filter</button>
+                                </div>
+                            </div>
                             <div class="table-responsive">
                                 <table id="example" class="table table-hover table-bordered" width="auto">
                                     <thead>
@@ -47,7 +85,7 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                                             <th>Status Penjualan</th>
                                             <th>tanggal input</th>
                                             <th>Penambah</th>
-                                            <th>Aksi</th>
+
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -94,43 +132,42 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                                                     ?>
                                                 </td>
                                                 <td><?= $row->diskon; ?></td>
-                                                
+
                                                 <td><?= $row->total; ?></td>
                                                 <td><?= $row->bayar; ?></td>
                                                 <td><?= $row->kembalian; ?></td>
                                                 <td><?= $row->status; ?></td>
                                                 <td><?= $row->tanggal_input; ?></td>
                                                 <td><?= $row->nama_lengkap; ?></td>
-                                                <td>
-                                                    <a href="javascript:void(0);" onclick="printReceipt(<?= $row->id_penjualan ?>)" class="btn btn-warning btn-sm">Cetak<i class="fa fa-print"></i></a>
-                                                </td>
                                             </tr>
                                         <?php endforeach; ?>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-                    </div><!-- /.card -->
+                    </div>
                 </div>
-            </div>
+            </div><!-- /.card -->
         </div>
-        <!-- /.container-fluid -->
     </div>
-    <!-- /.content -->
+</div>
+<!-- /.container-fluid -->
+</div>
+<!-- /.content -->
 </div>
 <script>
-function printReceipt(id_penjualan) {
-    $.ajax({
-        url: '<?= base_url('penjualan/get_sale_data/') ?>' + id_penjualan,
-        type: 'GET',
-        dataType: 'json',
-        success: function(data) {
-            if (!data || !data.items || !Array.isArray(data.items)) {
-                alert('Data penjualan tidak valid');
-                return;
-            }
+    function printReceipt(id_penjualan) {
+        $.ajax({
+            url: '<?= base_url('penjualan/get_sale_data/') ?>' + id_penjualan,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                if (!data || !data.items || !Array.isArray(data.items)) {
+                    alert('Data penjualan tidak valid');
+                    return;
+                }
 
-            var receiptHTML = `
+                var receiptHTML = `
             <div style="width: 500px; font-family: Arial, sans-serif;">
                 <h2 style="text-align: center;">NOTA PENJUALAN</h2>
                 <h3 style="text-align: center;">TOKO CAHAYA - APP</h3>
@@ -149,6 +186,9 @@ function printReceipt(id_penjualan) {
                         <th style="border: 1px solid black;">Harga Jual</th>
                         <th style="border: 1px solid black;">Diskon</th>
                         <th style="border: 1px solid black;">total</th>
+                        <th style="border: 1px solid black;">Bayar</th>
+                        <th style="border: 1px solid black;">Kembalian</th>
+                        <th style="border: 1px solid black;">Status</th>
                     </tr>
                     ${data.items.map(item => `
                         <tr>
@@ -170,19 +210,19 @@ function printReceipt(id_penjualan) {
             </div>
             `;
 
-            var printWindow = window.open('', '_blank');
-            printWindow.document.write(receiptHTML);
-            printWindow.document.close();
-            printWindow.print();
-            printWindow.onafterprint = function() {
-                printWindow.close();
-            };
-        },
-        error: function() {
-            alert('Gagal mengambil data penjualan');
-        }
-    });
-}
+                var printWindow = window.open('', '_blank');
+                printWindow.document.write(receiptHTML);
+                printWindow.document.close();
+                printWindow.print();
+                printWindow.onafterprint = function() {
+                    printWindow.close();
+                };
+            },
+            error: function() {
+                alert('Gagal mengambil data penjualan');
+            }
+        });
+    }
 </script>
 
 
@@ -243,6 +283,9 @@ function printReceipt(id_penjualan) {
                         <th>Harga Jual</th>
                         <th>Diskon</th>
                         <th>Total</th>
+                        <th>Bayar</th>
+                        <th>Kembalian</th>
+                        <th>Status</th>
                         <th>Tanggal Input</th>
                         <th>Penambah</th>
                     </tr>
@@ -259,6 +302,9 @@ function printReceipt(id_penjualan) {
                             <td>${row[6]}</td>
                             <td>${row[7]}</td>
                             <td>${row[8]}</td>
+                            <td>${row[9]}</td>
+                            <td>${row[10]}</td>
+                            <td>${row[11]}</td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -287,43 +333,87 @@ function printReceipt(id_penjualan) {
 </style>
 <script>
     $("#simpanTransaksi").click(function() {
-    var id_pelanggan = $("#id_pelanggan").val();
-    var diskon = $("#diskon").val();
-    var total = $("#total").val();
-    var id_barang = [];
-    var jumlah = [];
+        var id_pelanggan = $("#id_pelanggan").val();
+        var diskon = $("#diskon").val();
+        var total = $("#total").val();
+        var id_barang = [];
+        var jumlah = [];
 
-    keranjang.forEach(function(item) {
-        id_barang.push(item.id_barang);
-        jumlah.push(item.jumlah);
+        keranjang.forEach(function(item) {
+            id_barang.push(item.id_barang);
+            jumlah.push(item.jumlah);
+        });
+
+        $.ajax({
+            url: '<?php echo base_url('transaksi/save'); ?>',
+            method: 'POST',
+            data: {
+                id_pelanggan: id_pelanggan,
+                diskon: diskon,
+                total: total,
+                id_barang: id_barang,
+                jumlah: jumlah
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.status) {
+                    alert(response.message);
+                    // Clear the form and keranjang
+                    keranjang = [];
+                    updateKeranjangTable();
+                    hitungTotal();
+                    $("#penjualanForm")[0].reset();
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function() {
+                alert('Terjadi kesalahan saat menyimpan transaksi');
+            }
+        });
+    });
+</script>
+<script>
+$(document).ready(function() {
+    // Hancurkan DataTable jika sudah ada
+    if ($.fn.DataTable.isDataTable('#example')) {
+        $('#example').DataTable().destroy();
+    }
+
+    var table = $('#example').DataTable({
+        scrollX: true
     });
 
-    $.ajax({
-        url: '<?php echo base_url('transaksi/save'); ?>',
-        method: 'POST',
-        data: {
-            id_pelanggan: id_pelanggan,
-            diskon: diskon,
-            total: total,
-            id_barang: id_barang,
-            jumlah: jumlah
-        },
-        dataType: 'json',
-        success: function(response) {
-            if(response.status) {
-                alert(response.message);
-                // Clear the form and keranjang
-                keranjang = [];
-                updateKeranjangTable();
-                hitungTotal();
-                $("#penjualanForm")[0].reset();
-            } else {
-                alert(response.message);
-            }
-        },
-        error: function() {
-            alert('Terjadi kesalahan saat menyimpan transaksi');
+    // Fungsi untuk memfilter data
+    function filterData() {
+        var barang = $('#filter_barang').val();
+        var bulan = $('#filter_bulan').val();
+        var tahun = $('#filter_tahun').val();
+
+        table.columns(2).search(barang); // Kolom Barang
+
+        if (bulan && tahun) {
+            var regex = '^' + tahun + '-' + bulan;
+            table.column(10).search(regex, true, false); // Kolom Tanggal Input
+        } else if (tahun) {
+            table.column(10).search(tahun);
+        } else {
+            table.column(10).search('');
         }
+
+        table.draw();
+    }
+
+    // Event listener untuk tombol filter
+    $('#btn_filter').on('click', function() {
+        filterData();
+    });
+
+    // Event listener untuk perubahan pada dropdown
+    $('#filter_barang, #filter_bulan, #filter_tahun').on('change', function() {
+        filterData();
     });
 });
+
+// ... (existing printPenjualanReport function) ...
 </script>

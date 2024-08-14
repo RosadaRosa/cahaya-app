@@ -5,15 +5,42 @@ class PengeluaranModel extends CI_Model
     private $tabel = "pengeluaran";
 
     public function get_data()
-    {
+{
+    $this->db->select('pengeluaran.*, user.nama_lengkap as penambah');
+    $this->db->from('pengeluaran');
+    $this->db->join('user', 'user.id_user = pengeluaran.penambah');
+    $query = $this->db->get();
+    return $query->result();
+}
 
-        return $this->db->get($this->tabel)->result();
-        return $this->db->get('pengeluaran')->result();
-        // $data = $this->db->query("SELECT komoditas.id_komoditas, komoditas.komoditas, komoditas.kualitas, komoditas.satuan, komoditas.kode_kualitas, perta_hal1.id_perta_hal1, perta_hal1.bulan, perta_hal1.provinsi, perta_hal1.kabupaten, perta_hal1.kecamatan, 
-        // perta_hal1.nama, perta_hal1.nip, perta_hal1.tanggal, perta_hal2.id_perta_hal2, perta_hal2.id_komoditas, perta_hal2.responden,
-        // perta_hal2.harga_saat, perta_hal2.harga_sebelum, perta_hal2.bukti, perta_hal2.penambah, perta_hal2.`status` FROM perta_hal2 JOIN komoditas ON komoditas.id_komoditas = perta_hal2.id_komoditas JOIN perta_hal1 ON perta_hal1.id_perta_hal1 = perta_hal2.id_perta_hal1");
-        // return $data->result();
-    }
+public function get_data_report($dari_tanggal = NULL, $sampai_tanggal = NULL) 
+{ 
+    $this->db->select('pengeluaran.*, user.nama_lengkap as penambah'); 
+    $this->db->from('pengeluaran'); 
+
+    // Filter berdasarkan tanggal jika tanggal disertakan 
+    if ($dari_tanggal !== NULL && $sampai_tanggal !== NULL) { 
+        $this->db->where('pengeluaran.tgl_input >=', $dari_tanggal); 
+        $this->db->where('pengeluaran.tgl_input <=', $sampai_tanggal); 
+    } else { 
+        // Jika tidak ada rentang tanggal disertakan, gunakan filter tahun ini 
+        $this->db->where('pengeluaran.tgl_input >=', date('Y-01-01')); 
+        $this->db->where('pengeluaran.tgl_input <=', date('Y-12-31')); 
+    } 
+
+    // // Filter berdasarkan kategori jika kategori disertakan 
+    // if ($id_kategori !== NULL) { 
+    //     $this->db->where('pengeluaran.id_kategori', $id_kategori); 
+    // } 
+
+    
+    $this->db->join('user', 'user.id_user = pengeluaran.penambah'); 
+   
+    $query = $this->db->get(); 
+
+    return $query->result(); 
+}
+
 
     public function getJumlahData()
     {
@@ -30,7 +57,8 @@ class PengeluaranModel extends CI_Model
         $data = [
             'keterangan' => $this->input->post('keterangan', true),
             'harga' => $this->input->post('harga', true),
-            'tgl_input' => date('Y-m-d H:i:s')
+            'tgl_input' => date('Y-m-d H:i:s'),
+            'penambah' => $this->session->userdata('id_user')
         ];
 
 
@@ -52,6 +80,9 @@ class PengeluaranModel extends CI_Model
         //     // handle error if file upload fails
         // }
 
+        $id_user = $this->session->userdata('id_user');
+        $data_pengeluaran['penambah'] = $id_user;
+
         // // Menyimpan data ke dalam database
         $this->db->insert($this->tabel, $data);
 
@@ -69,7 +100,8 @@ class PengeluaranModel extends CI_Model
         $data = [
             'keterangan' => $this->input->post('keterangan', true),
             'harga' => $this->input->post('harga', true),
-            'tgl_input' => $this->input->post('tgl_input', true)
+            'tgl_input' => $this->input->post('tgl_input', true),
+            'penambah' => $this->session->userdata('id_user')
         ];
         $this->db->update($this->tabel, $data, ['id_pengeluaran' => $id_pengeluaran]);
         if ($this->db->affected_rows() > 0) {

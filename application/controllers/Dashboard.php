@@ -37,6 +37,7 @@ class Dashboard extends CI_Controller
         $data['jumlah_penjualan'] = $this->PenjualanModel->getJumlahPenjualan();
         $data['jumlah_pembelian'] = $this->PembelianModel->getJumlahPembelian();
         $data['monthly_data'] = $this->TerlarisModel->get_monthly_sales();
+        $data['terlaris'] = $this->TerlarisModel->get_terlaris_data(); // Ambil data terlaris
 
         $data['title'] = "CAHAYA-APP | Dashboard";
 

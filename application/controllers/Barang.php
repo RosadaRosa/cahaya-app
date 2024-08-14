@@ -111,6 +111,29 @@ class Barang extends CI_Controller
         echo json_encode($data);
     }
 
+    public function report_barang()
+    {
+        $level = $this->session->userdata('level');
+
+        if (!$level) {
+            // Redirect to login page if user is not logged in
+            redirect('login');
+        }
+
+        $data['level'] = $level;
+        $this->load->model('BarangModel');  //mengambil function di function get_data
+        $data['barang'] = $this->BarangModel->get_data();
+        $data['kategori_list'] = $this->db->query("SELECT * FROM kategori")->result();
+        $data['kategori'] = $this->db->query("SELECT * FROM kategori");
+        $data['merk'] = $this->db->query("SELECT * FROM merk");
+        $data['suplier'] = $this->db->query("SELECT * FROM suplier");
+        $data['title'] = "CAHAYA-APP | Barang";
+        $this->load->view('template/header', $data);
+        $this->load->view('template/sidebar', $data);
+        $this->load->view('laporan/laporanbarang', $data); //controller ngambil data dari model dikirimkan ke view
+        $this->load->view('template/footer');
+    }
+
     public function terapkan_diskon()
 {
     $id_barang = $this->input->post('id_barang');
@@ -125,7 +148,11 @@ class Barang extends CI_Controller
     } else {
         echo json_encode(['status' => 'error']);
     }
+
+    
 }
+
+
 
     // public function verify($id_barang)
     // {

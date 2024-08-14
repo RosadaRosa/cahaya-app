@@ -8,7 +8,6 @@ class PelangganModel extends CI_Model
     {
 
         return $this->db->get($this->tabel)->result();
-        
     }
 
     public function getJumlahData()
@@ -37,9 +36,9 @@ class PelangganModel extends CI_Model
         // $config['upload_path'] = './bukti/'; // specify your upload folder
         // $config['allowed_types'] = '*'; // specify allowed file types
         // $config['max_size'] = 10240; // specify max file size in KB
-    
+
         // $this->load->library('upload', $config);
-    
+
         // if ($this->upload->do_upload('bukti')) {
         //     $upload_data = $this->upload->data();
         //     $data['bukti'] = $upload_data['file_name']; // save file name to database
@@ -61,21 +60,18 @@ class PelangganModel extends CI_Model
         }
     }
 
-    public function update_data($id_pelanggan)
+
+    public function update_data($id_pelanggan, $data)
     {
-        $data = [
-            'nama_pelanggan' => $this->input->post('nama_pelanggan', true),
-            'alamat' => $this->input->post('alamat', true),
-            'telepon' => $this->input->post('telepon', true),
-            'email' => $this->input->post('email', true)
-        ];
-        $this->db->update($this->tabel, $data, ['id_pelanggan' => $id_pelanggan]);
+        $this->db->where('id_pelanggan', $id_pelanggan);
+        $this->db->update($this->tabel, $data);
+
         if ($this->db->affected_rows() > 0) {
             $this->session->set_flashdata('status', true);
-            $this->session->set_flashdata('pesan', 'Pelanggan Berhasil Diperbaharui');
+            $this->session->set_flashdata('pesan', 'Data Pelanggan Berhasil Diperbarui');
         } else {
             $this->session->set_flashdata('status', false);
-            $this->session->set_flashdata('pesan', 'Pelanggan Gagal Diperbaharui');
+            $this->session->set_flashdata('pesan', 'Data Pelanggan Gagal Diperbarui');
         }
     }
 

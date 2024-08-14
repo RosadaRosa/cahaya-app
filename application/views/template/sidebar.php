@@ -1,13 +1,8 @@
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
-    <a href="index3.html" class="brand-link">
+    <a href="<?= base_url('dashboard') ?>" class="brand-link">
         <img src="<?php echo base_url('assets/dist/img/cahayalogo.png') ?>" alt="CAHAYA Logo" class="brand-image img-circle elevation-3" style="opacity: .9; width: 65px; height: auto;">
         <span class="brand-text font-weight-light">CAHAYA-APP</span>
-        <!-- <style>
-        .main-sidebar {
-            background-color: #2F3645; /* Set background color */
-        }
-    </style> -->
     </a>
 
     <!-- Sidebar -->
@@ -18,14 +13,16 @@
                 <img src="<?php echo base_url('assets/dist/img/user-9.png') ?>" class="img-circle elevation-2" alt="User Image">
             </div>
             <div class="info">
-                <a class="d-block"><?php $level = $this->session->userdata('level');
-                                    if ($level == '1') {
-                                        echo '<a class="d-block">Admin</a>';
-                                    } elseif ($level == '2') {
-                                        echo '<a class="d-block">Pegawai</a>';
-                                    } else {
-                                    }
-                                    ?>
+                <a class="d-block">
+                    <?php
+                    $level = $this->session->userdata('level');
+                    if ($level == '1') {
+                        echo 'Admin';
+                    } elseif ($level == '2') {
+                        echo 'Karyawan';
+                    }
+                    ?>
+                </a>
             </div>
         </div>
 
@@ -43,9 +40,9 @@
                 <?php endif; ?>
 
                 <?php if ($level == '1' || $level == '2') : ?>
-                    <li class="nav-item <?= ($this->uri->segment(1) == 'barang') ? 'menu-open' : ''; ?>">
-
-                        <a href="<?= base_url('barang') ?>" class="nav-link <?= ($this->uri->segment(1) == 'barang') ? 'active' : ''; ?>">
+                    <!-- Data Barang -->
+                    <li class="nav-item <?= ($this->uri->segment(1) == 'barang' && $this->uri->segment(2) != 'report_barang') ? 'menu-open' : ''; ?>">
+                        <a href="<?= base_url('barang') ?>" class="nav-link <?= ($this->uri->segment(1) == 'barang' && $this->uri->segment(2) != 'report_barang') ? 'active' : ''; ?>">
                             <i class="nav-icon fas fa-boxes"></i>
                             <p>Data Barang</p>
                         </a>
@@ -53,8 +50,8 @@
                 <?php endif; ?>
 
                 <?php if ($level == '1' || $level == '2') : ?>
-                    <!-- Hotel -->
-                    <li class="nav-item <?= ($this->uri->segment(1) == 'hotel1' || $this->uri->segment(1) == 'hotel2') ? 'menu-open' : ''; ?>">
+                    <!-- Pelanggan -->
+                    <li class="nav-item <?= ($this->uri->segment(1) == 'pelanggan' || $this->uri->segment(1) == 'suplier') ? 'menu-open' : ''; ?>">
                         <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-store"></i>
                             <p>
@@ -80,8 +77,8 @@
                 <?php endif; ?>
 
                 <?php if ($level == '1' || $level == '2') : ?>
-                    <!-- Hotel -->
-                    <li class="nav-item <?= ($this->uri->segment(1) == 'penjualan' || $this->uri->segment(1) == 'penjualan') ? 'menu-open' : ''; ?>">
+                    <!-- Transaksi -->
+                    <li class="nav-item <?= ($this->uri->segment(1) == 'penjualan' || $this->uri->segment(1) == 'transaksi' || $this->uri->segment(1) == 'pembelian' || $this->uri->segment(1) == 'pengeluaran') ? 'menu-open' : ''; ?>">
                         <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-shopping-cart"></i>
                             <p>
@@ -91,7 +88,7 @@
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                <a href="<?= base_url('penjualan') ?>" class="nav-link <?= ($this->uri->segment(1) == 'penjualan') ? 'active' : ''; ?>">
+                                <a href="<?= base_url('penjualan/index') ?>" class="nav-link <?= ($this->uri->segment(1) == 'penjualan') ? 'active' : ''; ?>">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Penjualan</p>
                                 </a>
@@ -110,12 +107,6 @@
                                     <p>Pembelian</p>
                                 </a>
                             </li>
-                            <!-- <li class="nav-item">
-                                <a href="<//?= base_url('returnbarang') ?>" class="nav-link <//?= ($this->uri->segment(1) == 'returnbarang') ? 'active' : ''; ?>">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Return Barang</p>
-                                </a>
-                            </li> -->
                             <li class="nav-item">
                                 <a href="<?= base_url('pengeluaran') ?>" class="nav-link <?= ($this->uri->segment(1) == 'pengeluaran') ? 'active' : ''; ?>">
                                     <i class="far fa-circle nav-icon"></i>
@@ -126,10 +117,10 @@
                     </li>
                 <?php endif; ?>
 
-                <?php if ($level == '1' || $level == '2') : ?>
+                <?php if ($level == '1') : ?>
                     <!-- Laporan -->
-                    <li class="nav-item <?= ($this->uri->segment(1) == 'stokkurang' || $this->uri->segment(1) == 'reporthotel') ? 'menu-open' : ''; ?>">
-                        <a href="#" class="nav-link">
+                    <li class="nav-item <?= ($this->uri->segment(1) == 'stokkurang' || $this->uri->segment(1) == 'labarugi' || $this->uri->segment(1) == 'terlaris' || $this->uri->segment(1) == 'barang/report_barang' || $this->uri->segment(1) == 'penjualan/report' || $this->uri->segment(1) == 'pembelian/report' || $this->uri->segment(1) == 'pengeluaran/report') ? 'menu-open' : ''; ?>">
+                        <a href="#" class="nav-link <?= ($this->uri->segment(1) == 'stokkurang' || $this->uri->segment(1) == 'labarugi' || $this->uri->segment(1) == 'terlaris' || $this->uri->segment(1) == 'barang/report_barang' || $this->uri->segment(1) == 'penjualan/report' || $this->uri->segment(1) == 'pembelian/report' || $this->uri->segment(1) == 'pengeluaran/report') ? 'active' : ''; ?>">
                             <i class="nav-icon fas fa-file"></i>
                             <p>
                                 Laporan
@@ -152,16 +143,59 @@
                             <li class="nav-item">
                                 <a href="<?= base_url('terlaris') ?>" class="nav-link <?= ($this->uri->segment(1) == 'terlaris') ? 'active' : ''; ?>">
                                     <i class="far fa-circle nav-icon"></i>
-                                    <p>Terlaris</p>
+                                    <p>Barang Terlaris</p>
                                 </a>
                             </li>
+                            <li class="nav-item <?= ($this->uri->segment(1) == 'barang' && $this->uri->segment(2) == 'report_barang') ? 'menu-open' : ''; ?>">
+                                <a href="<?= base_url('barang/report_barang') ?>" class="nav-link <?= ($this->uri->segment(1) == 'barang' && $this->uri->segment(2) == 'report_barang') ? 'active' : ''; ?>">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Laporan Data Barang</p>
+                                </a>
+                            </li>
+                            <li class="nav-item <?= ($this->uri->segment(1) == 'penjualan' && $this->uri->segment(2) == 'report') ? 'menu-open' : ''; ?>">
+                                <a href="<?= base_url('penjualan/report') ?>" class="nav-link <?= ($this->uri->segment(1) == 'penjualan' && $this->uri->segment(2) == 'report') ? 'active' : ''; ?>">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Laporan Data Penjualan</p>
+                                </a>
+                            </li>
+                            <li class="nav-item <?= ($this->uri->segment(1) == 'pembelian' && $this->uri->segment(2) == 'report') ? 'menu-open' : ''; ?>">
+                                <a href="<?= base_url('pembelian/report') ?>" class="nav-link <?= ($this->uri->segment(1) == 'pembelian' && $this->uri->segment(2) == 'report') ? 'active' : ''; ?>">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Laporan Data Pembelian</p>
+                                </a>
+                            </li>
+                            <li class="nav-item <?= ($this->uri->segment(1) == 'prospek' && $this->uri->segment(2) == 'prospek') ? 'menu-open' : ''; ?>">
+                                <a href="<?= base_url('prospek') ?>" class="nav-link <?= ($this->uri->segment(1) == 'prospek' && $this->uri->segment(2) == 'prospek') ? 'active' : ''; ?>">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Laporan Prospek Penjualan</p>
+                                </a>
+                            </li>
+                            <li class="nav-item <?= ($this->uri->segment(1) == 'pengeluaran' && $this->uri->segment(2) == 'report') ? 'menu-open' : ''; ?>">
+                                <a href="<?= base_url('pengeluaran/report') ?>" class="nav-link <?= ($this->uri->segment(1) == 'pengeluaran' && $this->uri->segment(2) == 'report') ? 'active' : ''; ?>">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Laporan Pengeluaran</p>
+                                </a>
+                            </li>
+                            <li class="nav-item <?= ($this->uri->segment(1) == 'suplier' && $this->uri->segment(2) == 'report') ? 'menu-open' : ''; ?>">
+                                <a href="<?= base_url('suplier/report') ?>" class="nav-link <?= ($this->uri->segment(1) == 'suplier' && $this->uri->segment(2) == 'report') ? 'active' : ''; ?>">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Laporan Suplier</p>
+                                </a>
+                            </li>
+                            <li class="nav-item <?= ($this->uri->segment(1) == 'pelanggan' && $this->uri->segment(2) == 'report') ? 'menu-open' : ''; ?>">
+                                <a href="<?= base_url('pelanggan/report') ?>" class="nav-link <?= ($this->uri->segment(1) == 'pelanggan' && $this->uri->segment(2) == 'report') ? 'active' : ''; ?>">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Laporan Pelanggan</p>
+                                </a>
+                            </li>
+
                         </ul>
                     </li>
                 <?php endif; ?>
 
                 <?php if ($level == '1') : ?>
                     <!-- Master Data -->
-                    <li class="nav-item <?= ($this->uri->segment(1) == 'hd4' || $this->uri->segment(1) == 'hd51' || $this->uri->segment(1) == 'hotel' || $this->uri->segment(1) == 'pengguna') ? 'menu-open' : ''; ?>">
+                    <li class="nav-item <?= ($this->uri->segment(1) == 'kategori' || $this->uri->segment(1) == 'merk') ? 'menu-open' : ''; ?>">
                         <a href="#" class="nav-link">
                             <i class="nav-icon fas fa-database"></i>
                             <p>
@@ -170,19 +204,12 @@
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <!-- <li class="nav-item">
-                        <a href="<?= base_url('hd4') ?>" class="nav-link <?= ($this->uri->segment(1) == 'hd4') ? 'active' : ''; ?>">
-                            <i class="far fa-circle nav-icon"></i>
-                            <p>Data Peternakan</p>
-                        </a>
-                    </li> -->
                             <li class="nav-item">
                                 <a href="<?= base_url('kategori') ?>" class="nav-link <?= ($this->uri->segment(1) == 'kategori') ? 'active' : ''; ?>">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Data Kategori</p>
                                 </a>
                             </li>
-
                             <li class="nav-item">
                                 <a href="<?= base_url('merk') ?>" class="nav-link <?= ($this->uri->segment(1) == 'merk') ? 'active' : ''; ?>">
                                     <i class="far fa-circle nav-icon"></i>
@@ -198,20 +225,13 @@
                     <li class="nav-item <?= ($this->uri->segment(1) == 'user') ? 'menu-open' : ''; ?>">
                         <a href="<?= base_url('user') ?>" class="nav-link <?= ($this->uri->segment(1) == 'user') ? 'active' : ''; ?>">
                             <i class="nav-icon fas fa-user"></i>
-                            <p>
-                                <?php
-                                // Teks berdasarkan level
-                                if ($level == '1') {
-                                    echo 'Data User';
-                                }
-                                ?>
-                            </p>
+                            <p>Data User</p>
                         </a>
                     </li>
                 <?php endif; ?>
 
                 <?php if ($level == '1' || $level == '2') : ?>
-                    <!-- Pengguna -->
+                    <!-- Logout -->
                     <li class="nav-item <?= ($this->uri->segment(1) == 'logout') ? 'menu-open' : ''; ?>">
                         <a href="<?= base_url('logout') ?>" class="nav-link <?= ($this->uri->segment(1) == 'logout') ? 'active' : ''; ?>">
                             <i class="nav-icon fas fa-sign-out-alt"></i>
@@ -222,14 +242,79 @@
 
             </ul>
         </nav>
-
-
-        <!-- Add icons to the links using the .nav-icon class
-                   with font-awesome or any other icon font library -->
-        <!-- Hotel -->
-
-
-        <!-- /.sidebar-menu -->
     </div>
-    <!-- /.sidebar -->
 </aside>
+
+<script>
+    $(document).ready(function() {
+        // Function to handle menu states
+        function handleMenuState() {
+            $('.nav-sidebar .nav-item').each(function() {
+                var $item = $(this);
+                if ($item.find('> .nav-link.active').length > 0 || $item.find('> .nav-treeview > .nav-item > .nav-link.active').length > 0) {
+                    $item.addClass('menu-open');
+                    $item.find('> .nav-link').addClass('active');
+                } else {
+                    $item.removeClass('menu-open');
+                    $item.find('> .nav-link').removeClass('active');
+                }
+            });
+
+            // Special handling for "Laporan Data Pembelian"
+            if ($('.nav-link[href="<?= base_url('pembelian/report') ?>"]').hasClass('active')) {
+                $('.nav-item:has(.nav-link[href="#"])').removeClass('menu-open');
+                $('.nav-link[href="#"]').removeClass('active');
+                $('.nav-item:has(.nav-link[href="<?= base_url('pembelian/report') ?>"])').addClass('menu-open');
+            }
+            
+            // Special handling for "Laporan Data Pembelian"
+            if ($('.nav-link[href="<?= base_url('prospek') ?>"]').hasClass('active')) {
+                $('.nav-item:has(.nav-link[href="#"])').removeClass('menu-open');
+                $('.nav-link[href="#"]').removeClass('active');
+                $('.nav-item:has(.nav-link[href="<?= base_url('prospek') ?>"])').addClass('menu-open');
+            }
+
+            // Special handling for "Laporan Data Penjualan"
+            if ($('.nav-link[href="<?= base_url('penjualan/report') ?>"]').hasClass('active')) {
+                $('.nav-item:has(.nav-link[href="#"])').removeClass('menu-open');
+                $('.nav-link[href="#"]').removeClass('active');
+                $('.nav-item:has(.nav-link[href="<?= base_url('penjualan/report') ?>"])').addClass('menu-open');
+            }
+
+            if ($('.nav-link[href="<?= base_url('barang/report_barang') ?>"]').hasClass('active')) {
+                $('.nav-item:has(.nav-link[href="#"])').removeClass('menu-open');
+                $('.nav-link[href="#"]').removeClass('active');
+                $('.nav-item:has(.nav-link[href="<?= base_url('barang/report_barang') ?>"])').addClass('menu-open');
+            }
+
+            if ($('.nav-link[href="<?= base_url('pengeluaran/report') ?>"]').hasClass('active')) {
+                $('.nav-item:has(.nav-link[href="#"])').removeClass('menu-open');
+                $('.nav-link[href="#"]').removeClass('active');
+                $('.nav-item:has(.nav-link[href="<?= base_url('pengeluaran/report') ?>"])').addClass('menu-open');
+            }
+
+            if ($('.nav-link[href="<?= base_url('suplier/report') ?>"]').hasClass('active')) {
+                $('.nav-item:has(.nav-link[href="#"])').removeClass('menu-open');
+                $('.nav-link[href="#"]').removeClass('active');
+                $('.nav-item:has(.nav-link[href="<?= base_url('suplier/report') ?>"])').addClass('menu-open');
+            }
+
+            if ($('.nav-link[href="<?= base_url('pelanggan/report') ?>"]').hasClass('active')) {
+                $('.nav-item:has(.nav-link[href="#"])').removeClass('menu-open');
+                $('.nav-link[href="#"]').removeClass('active');
+                $('.nav-item:has(.nav-link[href="<?= base_url('pelanggan/report') ?>"])').addClass('menu-open');
+            }
+        }
+
+        // Call the function on page load
+        handleMenuState();
+
+        // Handle sidebar toggle button
+        $('[data-widget="pushmenu"]').on('click', function(e) {
+            e.preventDefault();
+            if ($('body').hasClass('sidebar-collapse')) {
+                $('body').removeClass('sidebar-collapse').addClass('sidebar-open');
+            }
+        });
+    });
+</script>

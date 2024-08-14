@@ -7,7 +7,8 @@ class PembelianModel extends CI_Model
     public function get_data()
     {
         $data = $this->db->query("SELECT pembelian.*, suplier.*, merk.*, barang.id_kategori, barang.id_merk,
-        barang.id_suplier, barang.harga_beli, barang.harga_jual, kategori.*, user.* FROM pembelian 
+        barang.id_suplier, barang.harga_beli AS hrg
+        , barang.harga_jual, kategori.*, user.* FROM pembelian 
         JOIN suplier ON pembelian.id_suplier=suplier.id_suplier 
       
         JOIN barang ON pembelian.id_barang=barang.id_barang
@@ -17,76 +18,139 @@ class PembelianModel extends CI_Model
         return $data->result();
     }
 
-    
+    public function get_data_report($dari_tanggal = NULL, $sampai_tanggal = NULL)
+    {
+        $this->db->select('pembelian.*, suplier.*, merk.*, barang.id_kategori, barang.id_merk,
+        barang.id_suplier, barang.harga_beli AS hrg
+        , barang.harga_jual, kategori.*, user.*');
+        $this->db->from('pembelian');
+
+        // Filter berdasarkan tanggal jika tanggal disertakan 
+        if ($dari_tanggal !== NULL && $sampai_tanggal !== NULL) {
+            $this->db->where('pembelian.tanggal_input >=', $dari_tanggal);
+            $this->db->where('pembelian.tanggal_input <=', $sampai_tanggal);
+        } else {
+            // Jika tidak ada rentang tanggal disertakan, gunakan filter tahun ini 
+            $this->db->where('pembelian.tanggal_input >=', date('Y-01-01'));
+            $this->db->where('pembelian.tanggal_input <=', date('Y-12-31'));
+        }
+
+        // // Filter berdasarkan kategori jika kategori disertakan 
+        // if ($id_kategori !== NULL) { 
+        //     $this->db->where('pembelian.id_kategori', $id_kategori); 
+        // } 
+
+        $this->db->join('suplier', 'pembelian.id_suplier = suplier.id_suplier');
+        $this->db->join('barang', 'pembelian.id_barang = barang.id_barang');
+        $this->db->join('user', 'user.id_user = pembelian.penambah');
+        $this->db->join('kategori', 'barang.id_kategori = kategori.id_kategori');
+        $this->db->join('merk', 'barang.id_merk = merk.id_merk');
+        $query = $this->db->get();
+
+        return $query->result();
+    }
+
+
 
     public function get_data_byid($id_pembelian)
     {
-        return $this->db->get_where($this->tabel, ['id_pembelian' => $id_pembelian])->row();
+        $this->db->select('pembelian.*, suplier.nama_suplier');
+        $this->db->from($this->tabel);
+        $this->db->join('suplier', 'pembelian.id_suplier = suplier.id_suplier', 'left');
+        $this->db->where('pembelian.id_pembelian', $id_pembelian);
+        return $this->db->get()->row();
     }
 
     public function save_data()
     {
-        $id_suplier = $this->input->post('id_suplier', true);
-        $total = $this->input->post('total', true);
-        $id_barang_array = $this->input->post('id_barang', true);
-        $jumlah_array = $this->input->post('jumlah', true);
+        $this->db->trans_start();
 
-        // Mengubah array menjadi string dengan pemisah "
-        $id_barang_string = implode('"', $id_barang_array);
-        $jumlah_string = implode('"', $jumlah_array);
+        try {
+            // Retrieve form inputs
+            $id_suplier = $this->input->post('id_suplier', true);
+            $total = $this->input->post('total', true);
+            $id_barang_array = json_decode($this->input->post('id_barang', true));
+            $jumlah_array = json_decode($this->input->post('jumlah', true));
+            $harga_beli_array = json_decode($this->input->post('harga_beli', true));
 
-        $data_pembelian = [
-            'id_suplier' => $id_suplier,
-            'id_barang' => $id_barang_string,
-            'jumlah' => $jumlah_string,
-            'total' => $total,
-            'tanggal_input' => date('Y-m-d H:i:s')
-        ];
+            // File upload configuration
+            $config['upload_path'] = './bukti/'; // specify your upload folder
+            $config['allowed_types'] = '*'; // specify allowed file types
+            $config['max_size'] = 10240; // specify max file size in KB
 
-        // Menentukan nilai penambah berdasarkan id_pengguna pengguna
-        $id_user = $this->session->userdata('id_user');
-        $data_pembelian['penambah'] = $id_user;
+            $this->load->library('upload', $config);
 
-        // Menyimpan data pembelian ke dalam database
-        $this->db->insert($this->tabel, $data_pembelian);
+            // Check if file is selected for upload
+            if (!empty($_FILES['bukti']['name'])) {
+                if ($this->upload->do_upload('bukti')) {
+                    $upload_data = $this->upload->data();
+                    $bukti_file_name = $upload_data['file_name']; // save file name
+                } else {
+                    throw new Exception('File upload failed: ' . $this->upload->display_errors());
+                }
+            } else {
+                throw new Exception('No file selected for upload');
+            }
 
-        if ($this->db->affected_rows() > 0) {
-            // Memperbarui stok barang
+            // Prepare data for insertion
+            $id_barang_string = implode('"', $id_barang_array);
+            $jumlah_string = implode('"', $jumlah_array);
+            $harga_beli_string = implode('"', $harga_beli_array);
+
+            $data_pembelian = [
+                'id_suplier' => $id_suplier,
+                'id_barang' => $id_barang_string,
+                'jumlah' => $jumlah_string,
+                'harga_beli' => $harga_beli_string,
+                'total' => $total,
+                'bukti' => $bukti_file_name,
+                'tanggal_input' => date('Y-m-d H:i:s'),
+                'penambah' => $this->session->userdata('id_user')
+            ];
+
+            // Insert the purchase data
+            $this->db->insert($this->tabel, $data_pembelian);
+
+            // Update stock for each item
             foreach ($id_barang_array as $index => $id_barang) {
                 $jumlah = $jumlah_array[$index];
 
-                // Ambil stok barang saat ini
                 $this->db->where('id_barang', $id_barang);
                 $barang = $this->db->get('barang')->row();
 
                 if ($barang) {
-                    // Tambahkan jumlah pembelian ke stok saat ini
                     $new_stok = $barang->stok + $jumlah;
-
-                    // Update stok barang di database
                     $this->db->where('id_barang', $id_barang);
                     $this->db->update('barang', ['stok' => $new_stok]);
                 }
             }
 
-            $this->session->set_flashdata('status', true);
-            $this->session->set_flashdata('pesan', 'Pembelian Berhasil Ditambahkan');
-        } else {
-            $this->session->set_flashdata('status', false);
-            $this->session->set_flashdata('pesan', 'Pembelian Gagal Ditambahkan');
+            // Complete transaction
+            $this->db->trans_complete();
+
+            if ($this->db->trans_status() === FALSE) {
+                throw new Exception('Pembelian Gagal Ditambahkan');
+            } else {
+                return ['status' => true, 'message' => 'Pembelian Berhasil Ditambahkan'];
+            }
+        } catch (Exception $e) {
+            $this->db->trans_rollback();
+            return ['status' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()];
         }
     }
+
+
 
 
     public function update_data($id_pembelian)
     {
         $data = [
-            'id_distributor' => $this->input->post('id_distributor', true),
+            'id_suplier' => $this->input->post('id_suplier', true),
             'id_barang' => $this->input->post('id_barang', true),
             'jumlah' => $this->input->post('jumlah', true),
             'harga_beli' => $this->input->post('harga_beli', true),
             'total' => $this->input->post('total', true),
-            'tanggal_input' => $this->input->post('tanggal_input', true)
+            'tanggal_input' => date('Y-m-d H:i:s')
         ];
         $this->db->update($this->tabel, $data, ['id_pembelian' => $id_pembelian]);
         if ($this->db->affected_rows() > 0) {
@@ -153,7 +217,8 @@ class PembelianModel extends CI_Model
         return $data->result();
     }
 
-    public function getJumlahPembelian() {
+    public function getJumlahPembelian()
+    {
         return $this->db->count_all('pembelian');
     }
 }

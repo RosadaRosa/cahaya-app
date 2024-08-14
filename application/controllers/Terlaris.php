@@ -31,34 +31,6 @@ class Terlaris extends CI_Controller
             redirect('login');
         }
 
-        $selected_month = $this->input->get('month') ? $this->input->get('month') : date('n');
-        $selected_year = $this->input->get('year') ? $this->input->get('year') : date('Y');
-
-        // Ambil data barang terlaris
-        $terlaris = $this->TerlarisModel->get_monthly_data($selected_month, $selected_year);
-
-        // Hitung total penjualan per bulan hanya untuk barang terlaris
-        $monthly_data = [];
-        foreach ($terlaris as $item) {
-            $month = date('F', strtotime($item->tanggal_input));
-            if (!isset($monthly_data[$month])) {
-                $monthly_data[$month] = 0;
-            }
-            $monthly_data[$month] += $item->total_terjual;
-        }
-
-        // Konversi ke format yang dibutuhkan oleh Chart.js
-        $chart_data = [];
-        foreach ($monthly_data as $month => $total) {
-            $chart_data[] = [
-                'month' => $month,
-                'total_terjual' => $total
-            ];
-        }
-
-        // Kirim data ke view
-        $data['monthly_data'] = $chart_data;
-
         $month = $this->input->get('month') ? $this->input->get('month') : null;
         $year = $this->input->get('year') ? $this->input->get('year') : null;
 

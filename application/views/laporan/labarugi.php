@@ -42,23 +42,31 @@
                 <div class="col-lg-12">
                     <div class="card card-primary card-outline">
                         <div class="card-header">
-                            <label for="month" class="form-label">Pilih Bulan</label>
-                            <select id="month" class="form-control">
-                                <option value="" selected disabled>Pilih Bulan</option>
-                                <?php for ($i = 1; $i <= 12; $i++) : ?>
-                                    <option value="<?= $i ?>" <?= $i == $this->input->get('month', true) ? 'selected' : '' ?>><?= date('F', mktime(0, 0, 0, $i, 1)) ?></option>
-                                <?php endfor; ?>
-                            </select>
-
-                            <label for="year" class="form-label mt-2">Pilih Tahun</label>
-                            <input type="number" id="year" class="form-control" value="<?= $this->input->get('year', true) ?: date('Y') ?>">
-
-                            <button onclick="printLabarugiReport()" class="btn btn-info btn-sm float-right mr-2 mt-2"><i class="fa fa-print"></i> Cetak Laporan</button>
-
                             <h5 class="card-title mt-3">Data Penjualan</h5>
                         </div>
 
                         <div class="card-body">
+                            <form action="<?php echo base_url('Labarugi/index'); ?>" method="post">
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <div class="form-group">
+                                            <label>Dari tanggal</label>
+                                            <input class="form-control" type="date" id="dari_tanggal" name="dari_tanggal" required="" value="<?php echo isset($_POST['dari_tanggal']) ? $_POST['dari_tanggal'] : ''; ?>">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-group">
+                                            <label>Sampai tanggal</label>
+                                            <input class="form-control" type="date" id="sampai_tanggal" name="sampai_tanggal" required="" value="<?php echo isset($_POST['sampai_tanggal']) ? $_POST['sampai_tanggal'] : ''; ?>">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label>&nbsp;</label>
+                                        <button type="submit" name="filter" class="form-control" style="background-color: #778899; color: white;">Filter</button>
+                                    </div>
+                                </div>
+                            </form>
+                            <button onclick="printLabarugiReport()" class="btn btn-info btn-sm float-right mr-2 mt-2"><i class="fa fa-print"></i> Cetak Laporan</button>
                             <table id="example" class="table table-hover table-bordered">
                                 <thead>
                                     <tr>
@@ -82,7 +90,21 @@
                                                 ?>
                                             </td>
                                             <td>Penjualan</td>
-                                            <td><?= $row->merk; ?>-<?= $row->bahan; ?>-<?= $row->ukuran; ?></td>
+                                            <td>
+                                                <?php
+                                                // Memisahkan nilai jumlah menjadi array
+                                                $id_barang_array = explode('"', $row->id_barang);
+
+                                                // Menampilkan id_barang untuk setiap nilai yang ditemukan
+                                                foreach ($id_barang_array as $id_barang) {
+                                                    foreach ($barang as $i) {
+                                                        if ($i->id_barang == $id_barang) {
+                                                            echo $i->merk . ' - ' . $i->bahan . ' - ' . $i->ukuran . '<br>'; // Tampilkan merk, bahan, dan ukuran
+                                                        }
+                                                    }
+                                                }
+                                                ?>
+                                            </td>
                                             <td><?= $row->total; ?></td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -99,7 +121,7 @@
                             <h5 class="card-title">Data Pembelian</h5>
                         </div>
                         <div class="card-body">
-                            <table id="example" class="table table-hover table-bordered" width="auto">
+                            <table id="example2" class="table table-hover table-bordered" width="auto">
                                 <thead>
                                     <tr>
                                         <th>No</th>
@@ -122,7 +144,21 @@
                                                 ?>
                                             </td>
                                             <td>Pembelian</td>
-                                            <td><?= $row->merk; ?>-<?= $row->bahan; ?>-<?= $row->ukuran; ?></td>
+                                            <td>
+                                                <?php
+                                                // Memisahkan nilai jumlah menjadi array
+                                                $id_barang_array = explode('"', $row->id_barang);
+
+                                                // Menampilkan id_barang untuk setiap nilai yang ditemukan
+                                                foreach ($id_barang_array as $id_barang) {
+                                                    foreach ($barang as $i) {
+                                                        if ($i->id_barang == $id_barang) {
+                                                            echo $i->merk . ' - ' . $i->bahan . ' - ' . $i->ukuran . '<br>'; // Tampilkan merk, bahan, dan ukuran
+                                                        }
+                                                    }
+                                                }
+                                                ?>
+                                            </td>
                                             <td><?= $row->total; ?></td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -134,7 +170,7 @@
                             <h5 class="card-title">Data Pengeluaran</h5>
                         </div>
                         <div class="card-body">
-                            <table id="example" class="table table-hover table-bordered" width="auto">
+                            <table id="example3" class="table table-hover table-bordered" width="auto">
                                 <thead>
                                     <tr>
                                         <th>No</th>
@@ -172,7 +208,7 @@
 
 
                     <div class="card-body">
-                        <table id="example" class="table table-hover table-bordered">
+                        <table id="example4" class="table table-hover table-bordered">
                             <tbody>
                                 <tr style="background-color: #4B70F5; color: white;">
                                     <td>Saldo Akhir</td>
@@ -188,81 +224,26 @@
 </div>
 
 <script>
-    function filterTable() {
-        var month = document.getElementById("month").value;
-        var year = document.getElementById("year").value;
-
-        var tables = document.querySelectorAll(".table");
-        tables.forEach(function(table) {
-            var rows = table.getElementsByTagName("tr");
-            for (var i = 1; i < rows.length; i++) { // Start from 1 to skip the header row
-                var dateCell = rows[i].getElementsByTagName("td")[1]; // Assuming the date is in the second column
-                if (dateCell) {
-                    var date = new Date(dateCell.textContent);
-                    if ((date.getMonth() + 1 == month || month == "") && (date.getFullYear() == year || year == "")) {
-                        rows[i].style.display = "";
-                    } else {
-                        rows[i].style.display = "none";
-                    }
-                }
-            }
-        });
-    }
-
-    document.getElementById("month").addEventListener("change", filterTable);
-    document.getElementById("year").addEventListener("change", filterTable);
-</script>
-
-
-<script>
     function printLabarugiReport() {
-        var month = document.getElementById('month').value;
-        var year = document.getElementById('year').value;
+  // Get the necessary data from the page
+  const totalPemasukan = parseFloat('<?= str_replace(',', '', $total_pemasukan) ?>');
+  const totalPembelian = parseFloat('<?= str_replace(',', '', $total_pengeluaran) ?>');
+  const saldoAkhir = parseFloat('<?= str_replace(',', '', $saldo_akhir) ?>');
+  
+  // Generate the pengeluaran HTML
+  let pengeluaranHtml = '';
+  <?php foreach ($pengeluaran as $row) { ?>
+    pengeluaranHtml += `
+      <tr>
+        <td>${'<?= $row->keterangan ?>'}</td>
+        <td class="right">Rp <?= number_format($row->harga, 0, ',', '.') ?></td>
+      </tr>
+    `;
+  <?php } ?>
 
-        // Collect filtered data from the displayed table rows
-        var pemasukanRows = document.querySelectorAll(".card-primary.card-outline:nth-of-type(1) tbody tr");
-        var pembelianRows = document.querySelectorAll(".card-primary.card-outline:nth-of-type(2) tbody tr");
-        var pengeluaranRows = document.querySelectorAll(".card-primary.card-outline:nth-of-type(3) tbody tr");
-
-        var totalPemasukan = 0;
-        var totalPembelian = 0;
-        var totalPengeluaran = 0;
-        var pengeluaranDetails = [];
-
-        pemasukanRows.forEach(function(row) {
-            if (row.style.display !== 'none' && row.querySelector("td:nth-child(5)")) {
-                totalPemasukan += parseInt(row.querySelector("td:nth-child(5)").textContent.replace(/\D/g, ''));
-            }
-        });
-
-        pembelianRows.forEach(function(row) {
-            if (row.style.display !== 'none' && row.querySelector("td:nth-child(5)")) {
-                totalPembelian += parseInt(row.querySelector("td:nth-child(5)").textContent.replace(/\D/g, ''));
-            }
-        });
-
-        pengeluaranRows.forEach(function(row) {
-            if (row.style.display !== 'none' && row.querySelector("td:nth-child(5)")) {
-                var harga = parseInt(row.querySelector("td:nth-child(5)").textContent.replace(/\D/g, ''));
-                totalPengeluaran += harga;
-                pengeluaranDetails.push({
-                    keterangan: row.querySelector("td:nth-child(4)").textContent,
-                    harga: harga
-                });
-            }
-        });
-
-        var totalBeban = totalPembelian + totalPengeluaran;
-        var saldoAkhir = totalPemasukan - totalBeban;
-
-        var pengeluaranHtml = pengeluaranDetails.map(item =>
-            `<tr>
-            <td style="padding: 5px 0;">${item.keterangan}</td>
-            <td style="text-align: right;">Rp ${item.harga.toLocaleString('id-ID')}</td>
-        </tr>`
-        ).join('');
-
-        var printContents = `
+  // Open the print window
+  const printWindow = window.open('', 'PRINT', 'height=600,width=800');
+  printWindow.document.write(`
     <!DOCTYPE html>
     <html lang="id">
     <head>
@@ -283,14 +264,14 @@
     </head>
     <body>
         <div style="width: 100%;">
-            <img src="<?= base_url('assets/dist/img/cahayalogo.png') ?>" alt="Logo" style="width: 100px; height: auto;">
+            <img src="${'<?= base_url('assets/dist/img/cahayalogo.png') ?>'}" alt="Logo" style="width: 100px; height: auto;">
             <div style="text-align: center; margin-bottom: 20px;">
                 <h2 style="margin: 0;">LAPORAN LABA RUGI</h2>
                 <h3 style="margin: 5px 0;">TOKO CAHAYA - APP</h3>
                 <p style="margin: 0; font-size: 12px;">
                     Jl. Sasaran, Keraton, Kec. Martapura, Kota Martapura, Kalimantan Selatan 70714
                 </p>
-                <p style="margin: 5px 0;">Periode: ${new Date(year, month - 1).toLocaleString('id-ID', {month: 'long', year: 'numeric'})}</p>
+                <p style="margin: 5px 0;">Periode: ${new Date(<?= date('Y') ?>, <?= date('n') - 1 ?>).toLocaleString('id-ID', {month: 'long', year: 'numeric'})}</p>
             </div>
             <hr style="border: 1px solid black; margin-bottom: 20px;">
             <table>
@@ -317,7 +298,7 @@
                 ${pengeluaranHtml}
                 <tr class="bold">
                     <td>Total Beban</td>
-                    <td class="right">Rp ${totalBeban.toLocaleString('id-ID')}</td>
+                    <td class="right">Rp ${(totalPembelian).toLocaleString('id-ID')}</td>
                 </tr>
                 <tr class="bold">
                     <td>Saldo Akhir</td>
@@ -332,18 +313,11 @@
         </div>
     </body>
     </html>
-    `;
+  `);
 
-        var printWindow = window.open('', '_blank');
-        printWindow.document.write(printContents);
-        printWindow.document.close();
-
-        // Wait for the content to load before printing
-        printWindow.onload = function() {
-            printWindow.print();
-            printWindow.onafterprint = function() {
-                printWindow.close();
-            };
-        };
-    }
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+  printWindow.close();
+}
 </script>

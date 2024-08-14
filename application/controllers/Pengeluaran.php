@@ -8,6 +8,7 @@ class Pengeluaran extends CI_Controller
     {
         parent::__construct();
         $this->load->model('PengeluaranModel');
+        $this->load->model('UserModel');
     }
 
     public function index()
@@ -21,10 +22,30 @@ class Pengeluaran extends CI_Controller
         $data['level'] = $level;
         $this->load->model('PengeluaranModel');  //mengambil function di function get_data
         $data['pengeluaran'] = $this->PengeluaranModel->get_data();
+        $data['user'] = $this->UserModel->get_data();
         $data['title'] = "CAHAYA-APP | pengeluaran";
         $this->load->view('template/header', $data);
         $this->load->view('template/sidebar', $data);
         $this->load->view('transaksi/pengeluaran_tampil', $data); //controller ngambil data dari model dikirimkan ke view
+        $this->load->view('template/footer');
+    }
+
+    public function report()
+    {
+        $level = $this->session->userdata('level');
+
+        if (!$level) {
+            // Redirect to login page if user is not logged in
+            redirect('login');
+        }
+        $data['level'] = $level;
+        $this->load->model('PengeluaranModel');  //mengambil function di function get_data
+        $data['pengeluaran'] = $this->PengeluaranModel->get_data();
+        $data['user'] = $this->UserModel->get_data();
+        $data['title'] = "CAHAYA-APP | pengeluaran";
+        $this->load->view('template/header', $data);
+        $this->load->view('template/sidebar', $data);
+        $this->load->view('laporan/laporanpengeluaran', $data); //controller ngambil data dari model dikirimkan ke view
         $this->load->view('template/footer');
     }
 

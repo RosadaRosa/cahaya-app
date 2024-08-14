@@ -13,8 +13,7 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="<?= base_url('dashboard'); ?>">Dashboard</a></li>
-                        <li class="breadcrumb-item">Pelanggan</li>
-                        <li class="breadcrumb-item active">Tampil Data</li>
+                        <li class="breadcrumb-item active">Pelanggan</li>
                     </ol>
                 </div>
             </div>
@@ -30,10 +29,11 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                         <div class="card-header">
                             <h5 class="card-title">Data Pelanggan</h5>
                             <?php if ($level != "admin" && $level != "pengawas") : ?>
-                                <a href="<?= base_url('pelanggan/tambah') ?>" class="btn btn-primary btn-sm float-right"><i class="fa fa-plus"></i> Tambah Data</a>
+                                <button class="btn btn-primary btn-sm float-right" data-toggle="modal" data-target="#tambahPelangganModal"><i class="fa fa-plus"></i> Tambah Data</button>
                             <?php endif; ?>
                             <button onclick="printPelangganReport()" class="btn btn-info btn-sm float-right mr-2"><i class="fa fa-print"></i> Cetak Laporan</button>
                         </div>
+                        <div class="card-body">
                             <div class="table-responsive">
                                 <table id="example" class="table table-hover table-bordered">
                                     <thead>
@@ -57,7 +57,7 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                                                 <td><?= $row->email; ?></td>
                                                 <td>
                                                     <div class="btn-group">
-                                                        <a href="<?= base_url('pelanggan/ubah/' . $row->id_pelanggan) ?>" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></a>
+                                                        <button class="btn btn-warning btn-sm" onclick="editPelanggan(<?= $row->id_pelanggan; ?>)"><i class="fa fa-edit"></i></button>
                                                         <button class="btn btn-danger btn-sm" onclick="confirmDeletion('<?= $row->id_pelanggan; ?>')"><i class="fa fa-trash"></i></button>
                                                     </div>
                                                 </td>
@@ -67,13 +67,96 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                                 </table>
                             </div>
                         </div>
-                    </div><!-- /.card -->
+                    </div>
                 </div>
             </div>
         </div>
-        <!-- /.container-fluid -->
     </div>
-    <!-- /.content -->
+</div>
+
+<!-- Modal Tambah Pelanggan -->
+<div class="modal fade" id="tambahPelangganModal" tabindex="-1" role="dialog" aria-labelledby="tambahPelangganModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tambahPelangganModalLabel">Tambah Data Pelanggan</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="<?= base_url('pelanggan/tambah') ?>" method="post">
+                    <div class="form-group">
+                        <label for="nama_pelanggan">Nama Pelanggan</label>
+                        <input type="text" name="nama_pelanggan" id="nama_pelanggan" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="alamat">Alamat</label>
+                        <input type="text" name="alamat" id="alamat" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="telepon">Telepon</label>
+                        <input type="text" name="telepon" id="telepon" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" name="email" id="email" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" name="simpan" class="btn btn-success btn-sm">
+                            <i class="fa fa-save"></i> Simpan
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal">
+                            <i class="fa fa-ban"></i> Batal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit Pelanggan -->
+<div class="modal fade" id="editPelangganModal" tabindex="-1" role="dialog" aria-labelledby="editPelangganModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPelangganModalLabel">Edit Data Pelanggan</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editPelangganForm" action="<?= base_url('pelanggan/ubah') ?>" method="post">
+                    <input type="hidden" name="id_pelanggan" id="edit_id_pelanggan">
+                    <div class="form-group">
+                        <label for="edit_nama_pelanggan">Nama Pelanggan</label>
+                        <input type="text" name="nama_pelanggan" id="edit_nama_pelanggan" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_alamat">Alamat</label>
+                        <input type="text" name="alamat" id="edit_alamat" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_telepon">Telepon</label>
+                        <input type="text" name="telepon" id="edit_telepon" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_email">Email</label>
+                        <input type="email" name="email" id="edit_email" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" name="simpan" class="btn btn-success btn-sm">
+                            <i class="fa fa-save"></i> Simpan Perubahan
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" data-dismiss="modal">
+                            <i class="fa fa-ban"></i> Batal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Modal for deletion confirmation -->
@@ -98,47 +181,10 @@ $id_pengguna = $this->session->userdata('id_pengguna');
 </div>
 
 <script>
-    function confirmDeletion(id_pelanggan) {
-        var deleteUrl = '<?= base_url('pelanggan/hapus/') ?>' + id_pelanggan;
-        $('#confirmDeleteBtn').attr('href', deleteUrl);
-        $('#deletionModal').modal('show');
-    }
-
-    $(document).ready(function() {
-        $('#example').DataTable({
-            scrollX: true,
-            autoWidth: false,
-            columnDefs: [{
-                    width: '10%',
-                    targets: 0
-                },
-                {
-                    width: '20%',
-                    targets: 1
-                },
-                {
-                    width: '30%',
-                    targets: 2
-                },
-                {
-                    width: '15%',
-                    targets: 3
-                },
-                {
-                    width: '15%',
-                    targets: 4
-                },
-                {
-                    width: '10%',
-                    targets: 5
-                }
-            ]
-        });
-    });
-
     var table;
 
     $(document).ready(function() {
+        // Inisialisasi DataTable
         table = $('#example').DataTable({
             scrollX: true,
             autoWidth: false,
@@ -168,13 +214,31 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                 }
             ]
         });
-
-        // Fungsi filter
-        $('#filter_pelanggan').on('change', function() {
-            var filterValue = $(this).val();
-            table.column(1).search(filterValue).draw();
-        });
     });
+
+    function editPelanggan(id) {
+        $.ajax({
+            url: '<?= base_url('pelanggan/get_pelanggan/') ?>' + id,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                $('#edit_id_pelanggan').val(data.id_pelanggan);
+                $('#edit_nama_pelanggan').val(data.nama_pelanggan);
+                $('#edit_alamat').val(data.alamat);
+                $('#edit_telepon').val(data.telepon);
+                $('#edit_email').val(data.email);
+                $('#editPelangganModal').modal('show');
+            },
+            error: function() {
+                alert('Terjadi kesalahan saat mengambil data pelanggan');
+            }
+        });
+    }
+
+    function confirmDeletion(id) {
+        $('#confirmDeleteBtn').attr('href', '<?= base_url('pelanggan/hapus/') ?>' + id);
+        $('#deletionModal').modal('show');
+    }
 
     function printPelangganReport() {
         var filterValue = $('#filter_pelanggan option:selected').text();
@@ -184,7 +248,7 @@ $id_pengguna = $this->session->userdata('id_pengguna');
 
         var printContents = `
         <div style="text-align: center; font-family: Arial, sans-serif;">
-        <img src="<?= base_url('assets/dist/img/cahayalogo.png') ?>" alt="Logo" style="width: 100px; height: auto;">
+            <img src="<?= base_url('assets/dist/img/cahayalogo.png') ?>" alt="Logo" style="width: 100px; height: auto;">
             <h2>LAPORAN DATA PELANGGAN</h2>
             <h3>TOKO CAHAYA - APP</h3>
             <p>Jl. Sasaran, Kerokan, Kec. Martapura, Kota Martapura, Kalimantan Selatan 70714</p>

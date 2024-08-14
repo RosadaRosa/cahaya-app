@@ -29,13 +29,11 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                     <div class="card card-primary card-outline">
                         <div class="card-header">
                             <h5 class="card-title">Data suplier</h5>
-                            <?php if ($level != "admin" && $level != "pengawas") : ?>
-                                <a href="<?= base_url('suplier/tambah') ?>" class="btn btn-primary btn-sm float-right"><i class="fa fa-plus"></i> Tambah Data</a>
-                            <?php endif; ?>
+                            <button onclick="printSuplierReport()" class="btn btn-info btn-sm float-right mr-2"><i class="fa fa-print"></i> Cetak Laporan</button>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table id="example" class="table table-hover table-bordered">
+                                <table class="table table-hover table-bordered">
                                     <thead>
                                         <tr>
                                             <th>No</th>
@@ -43,7 +41,6 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                                             <th>Alamat</th>
                                             <th>Telepon</th>
                                             <th>Email</th>
-                                            <th>Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -54,12 +51,6 @@ $id_pengguna = $this->session->userdata('id_pengguna');
                                                 <td><?= $row->alamat; ?></td>
                                                 <td><?= $row->telepon; ?></td>
                                                 <td><?= $row->email; ?></td>
-                                                <td>
-                                                    <div class="btn-group">
-                                                        <a href="<?= base_url('suplier/ubah/' . $row->id_suplier) ?>" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></a>
-                                                        <button class="btn btn-danger btn-sm" onclick="confirmDeletion('<?= $row->id_suplier; ?>')"><i class="fa fa-trash"></i></button>
-                                                    </div>
-                                                </td>
                                             </tr>
                                         <?php endforeach; ?>
                                     </tbody>
